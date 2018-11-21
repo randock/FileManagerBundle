@@ -1,22 +1,4 @@
 
-{% block javascripts %}
-    <script src="{{ asset('build/manifest.js') }}"></script>
-    <script src="{{ asset('build/theme.js') }}"></script>
-    <script src="{{ asset('build/js/base.js') }}"></script>
-    <script src="{{ asset('bundles/bazingajstranslation/js/translator.min.js') }}"></script>
-    <script src="{{ url('bazinga_jstranslation_js') }}"></script>
-    <script src="{{ asset('bundles/fosjsrouting/js/router.js') }}"></script>
-    <script src="{{ asset('js/fos_js_routes.' ~ app.environment ~ '.js') }}"></script>
-    <script src="{{ asset('build/js/mediaLibrary.js') }}"></script>
-    <script
-            src="https://code.jquery.com/jquery-1.12.4.min.js"
-            integrity="sha256-ZosEbRLbNQzLpnKIkEdrPv7lOy9C27hHQ+Xp8a4MxAQ="
-            crossorigin="anonymous"></script>
-    <script
-            src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"
-            integrity="sha256-VazP97ZCwtekAsvgPBSUwPFKdrwD3unUfSGVYrahUqU="
-            crossorigin="anonymous"></script>
-{% endblock %}
 
 <div class="modal fade" id="js-confirm-delete" tabindex="-1" role="dialog" aria-hidden="true">
     <div class="modal-dialog">

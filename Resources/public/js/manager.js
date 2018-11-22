@@ -341,8 +341,16 @@ $(function () {
     $('#fileupload').fileupload({
         dataType: 'json',
         processQueue: false,
-        dropZone: $('#dropzone')
+        dropZone: $('#dropzone'),
+        progressall: function (e, data) {
+            let progress = parseInt(data.loaded / data.total * 100, 10);
+            $('.progress-bar-info').css(
+                'width',
+                progress + '%'
+            );
+        }
     }).on('fileuploaddone', function (e, data) {
+        uploadProgress.close();
         $.each(data.result.files, function (index, file) {
             if (file.url) {
                 displaySuccess('<strong>' + file.name + '</strong> ' + successMessage)
@@ -371,8 +379,32 @@ $(function () {
             }
         });
     }).on('fileuploadfail', function (e, data) {
+        uploadProgress.close();
         $.each(data.files, function (index, file) {
             displayError('File upload failed.')
+        });
+    }).on('fileuploadstart', function(e) {
+        uploadProgress = $.notify({
+            message: uploadMessage
+        }, {
+            type: 'info',
+            delay:0,
+            timer:0,
+            showProgressbar: true,
+            placement: {
+                from: "bottom",
+                align: "left"
+            },
+            template: '<div data-notify="container" class="col-xs-5 col-md-4 col-lg-3 alert alert-{0}" role="alert">' +
+                '<button type="button" aria-hidden="true" class="close" data-notify="dismiss">×</button>' +
+                '<span data-notify="icon"></span> ' +
+                '<span data-notify="title">{1}</span> ' +
+                '<span data-notify="message">{2}</span>' +
+                '<div class="progress" data-notify="progressbar">' +
+                '<div class="progress-bar progress-bar-{0}" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 0%;"></div>' +
+                '</div>' +
+                '<a href="{3}" target="{4}" data-notify="url"></a>' +
+                '</div>'
         });
     });
 })

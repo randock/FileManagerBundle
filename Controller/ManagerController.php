@@ -664,7 +664,7 @@ class ManagerController extends Controller
 
         $newFilePath = sprintf('%s%s%s%s',
             $fileManager->getBasePath(),
-            $newPath,
+            urldecode($newPath),
             \DIRECTORY_SEPARATOR,
             $fileName
         );
@@ -679,13 +679,13 @@ class ManagerController extends Controller
 
         $newThumbPathFolder = sprintf('%s%s%s%s',
             $fileManager->getBasePath(),
-            $newPath,
+            urldecode($newPath),
             \DIRECTORY_SEPARATOR,
             FileTypeService::THUMBNAIL_FOLDER_PREFIX);
 
         $newThumbPath = sprintf('%s%s%s%s%s%s',
             $fileManager->getBasePath(),
-            $newPath,
+            urldecode($newPath),
             \DIRECTORY_SEPARATOR,
             FileTypeService::THUMBNAIL_FOLDER_PREFIX,
             \DIRECTORY_SEPARATOR,

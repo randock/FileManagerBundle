@@ -169,6 +169,9 @@ $(function () {
                     }
                     return true;
                 }
+            },
+            'dnd': {
+                'is_draggable': function(){return false;}
             }
         }).bind("changed.jstree", function (e, data) {
             if (data.node) {
@@ -180,16 +183,21 @@ $(function () {
             ev.stopPropagation();
             ev.preventDefault();
 
-            let target = $(data.event.target);
+            let target = $(data.event.target).closest('a');
             let file = $(data.element);
 
-            if(target.closest('.jstree-hovered:not(.jstree-clicked)').length) {
+            if(file.attr('id') === 'j1_1_anchor') {
+                return false;
+            }
+
+            if(target.closest('.jstree-hovered:not(.jstree-clicked)').length && file.hasClass('file')) {
                 moveFile(target, file);
             }
             return false;
         }).on('dnd_move.vakata', function(e, data) {
             let target = $(data.event.target);
-            if(target.closest('.jstree-hovered:not(.jstree-clicked)').length) {
+            let file = $(data.element);
+            if(target.closest('.jstree-hovered:not(.jstree-clicked)').length && file.hasClass('file')) {
                 data.helper.find('.jstree-icon').removeClass('jstree-er').addClass('jstree-ok');
             } else {
                 data.helper.find('.jstree-icon').removeClass('jstree-ok').addClass('jstree-er');

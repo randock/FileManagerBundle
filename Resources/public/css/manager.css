@@ -125,3 +125,8 @@ button i {
 
 }
 
+.btn-success {
+    background-color: #00b9b4 !important;
+    border-color: #00b9b4 !important;
+}
+

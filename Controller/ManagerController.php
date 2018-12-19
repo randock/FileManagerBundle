@@ -394,7 +394,80 @@ class ManagerController extends Controller
         return new Response();
     }
 
+    /**
+     * @Route("/moveFolder/", name="file_manager_move_folder")
+     *
+     * @param Request $request
+     *
+     * @return Response
+     *
+     * @throws \Exception
+     */
+    public function moveFolderAction(Request $request)
+    {
+        $queryParameters = $request->query->all();
+        unset($queryParameters['json']);
 
+        $destIsRoot = false;
+        if($queryParameters['destination'] === '/') {
+            $destIsRoot = true;
+        }
+
+        if($queryParameters['origin'] === '/') {
+            return new Response();
+        }
+
+        //moving to inner folder, recursion
+        if (strpos($queryParameters['destination'], $queryParameters['origin'] ) === 0 && strpos(str_replace($queryParameters['origin'], '', $queryParameters['destination']), '/') !== false) {
+            return new Response();
+        }
+
+        $expOrig = explode('/', $queryParameters['origin']);
+
+        $lastElem = array_pop($expOrig);
+
+        if($destIsRoot && count($expOrig) === 1) {
+            $expOrig[] = '';
+        }
+
+        //exit if we're moving to the same location we are
+        if (implode('/', $expOrig) === $queryParameters['destination']) {
+            return new Response();
+        }
+
+        $fs = $this->newFileManager($queryParameters);
+
+        $filesystem = new Filesystem();
+
+        $origin = sprintf(
+            '%s%s',
+            $fs->getBasePath(),
+            urldecode($queryParameters['origin'])
+        );
+
+        $destination = sprintf(
+            '%s%s%s%s',
+            $fs->getBasePath(),
+            urldecode($queryParameters['destination']),
+            DIRECTORY_SEPARATOR,
+            urldecode($lastElem)
+        );
+
+        while ($filesystem->exists($destination)) {
+            $destination = sprintf(
+                '%s_copy',
+                $destination
+            );
+        }
+        try {
+            $filesystem->mirror($origin, $destination);
+            $filesystem->remove($origin);
+        }catch(\Exception $e){
+
+        }
+
+        return new Response();
+    }
 
     /**
      * @Route("/file/{fileName}", name="file_manager_file")
@@ -548,6 +621,7 @@ class ManagerController extends Controller
         }
         $directoriesList = null;
 
+
         foreach ($directories as $directory) {
             /** @var SplFileInfo $directory */
             $fileName = $baseFolderName ? '' : $parent.$directory->getFilename();
@@ -564,6 +638,7 @@ class ManagerController extends Controller
                 'text' => $directory->getFilename().$fileSpan,
                 'icon' => 'fa fa-folder-o',
                 'children' => $this->retrieveSubDirectories($fileManager, $directory->getPathname(), $fileName.DIRECTORY_SEPARATOR),
+                'li_attr' => ['class' => 'dir'],
                 'a_attr' => [
                     'href' => $fileName ? $this->generateUrl('file_manager', $queryParameters) : $this->generateUrl('file_manager', $queryParametersRoute),
                 ], 'state' => [

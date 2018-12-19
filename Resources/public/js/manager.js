@@ -76,9 +76,55 @@ $(function () {
     }
 
 
+    function ajaxMoveFolder(origin, destination) {
+        $.ajax({
+            data: {
+                json: 'true',
+                conf: 'basic_user',
+                origin: origin,
+                destination: destination
+            },
+            url: urlmovefolder,
+            success:function(data){
+                window.location.reload();
+            },
+            error:function(a,b,c){
+            }
+        });
+    }
+
+
+    function moveFolder(destFolder, origFolder) {
+        let destPath = '';
+        let dataHref = destFolder.attr('href').split('&');
+        dataHref.forEach(function (queryFragment, index) {
+            let queryNVP = queryFragment.split('=');
+            if (queryNVP[0] === 'route') {
+                destPath = queryNVP[1];
+            }
+        });
+        if(destPath == '') {
+            destPath = '/';
+        }
+
+        let origPath = '';
+        let dataHref2 = origFolder.attr('href').split('&');
+        dataHref2.forEach(function (queryFragment, index) {
+            let queryNVP2 = queryFragment.split('=');
+            if (queryNVP2[0] === 'route') {
+                origPath = queryNVP2[1];
+            }
+        });
+        if(origPath != '') {
+            ajaxMoveFolder(origPath, destPath);
+        }
+
+    }
+
+
     function setDroppables() {
         $('.dir').droppable({
-            tolerance: "touch",
+            tolerance: "pointer",
             over: function(event, ui) {
                 ui.helper.find('.jstree-icon').removeClass('jstree-er').addClass('jstree-ok');
             },
@@ -86,8 +132,21 @@ $(function () {
                 ui.helper.find('.jstree-icon').removeClass('jstree-ok').addClass('jstree-er');
             },
             drop: function (event, ui) {
-                let file = $(event.target).find('p > a');
-                moveFile(file, $(ui.draggable))
+                let file = $(event.target);
+                if($(ui.draggable).hasClass('dir')) {
+                    if($(ui.draggable).is('tr')) {
+                        moveFolder(file.find('td > a'), $(ui.draggable).find('td > a'))
+                    }else{
+                        moveFolder(file.find('p > a'), $(ui.draggable).find('p > a'))
+                    }
+                }else if($(ui.draggable).hasClass('file')) {
+                    if($(ui.draggable).is('tr')) {
+                        moveFile(file.find('td > a'), $(ui.draggable))
+                    }else {
+                        moveFile(file.find('p > a'), $(ui.draggable))
+
+                    }
+                }
             }
         });
     }
@@ -114,6 +173,7 @@ $(function () {
             opacity: 0.7,
             helper:"clone",
             start: function (event, ui){
+                $(this).addClass('drag-active');
                 if($('#tree').length){
                     let item = getHelper($(this));
                     return $.vakata.dnd.start(
@@ -130,6 +190,9 @@ $(function () {
                         item
                     );
                 }
+            },
+            stop: function(event, ui){
+                $('.drag-active').removeClass('drag-active');
             }
         };
         if($('#tree').length){
@@ -140,6 +203,7 @@ $(function () {
             }
         }
         $('.file').draggable(draggableOpts);
+        $('.dir').draggable(draggableOpts);
     }
 
     function renameFile($renameModalButton) {
@@ -170,9 +234,6 @@ $(function () {
                     return true;
                 }
             },
-            'dnd': {
-                'is_draggable': function(){return false;}
-            }
         }).bind("changed.jstree", function (e, data) {
             if (data.node) {
                 document.location = data.node.a_attr.href;
@@ -190,19 +251,78 @@ $(function () {
                 return false;
             }
 
-            if(target.closest('.jstree-hovered:not(.jstree-clicked)').length && file.hasClass('file')) {
+            if (vakataDndStopFolder(ev, data)){
+                moveFolder(target, file.find('a'));
+            }else if(vakataDndStopFile(ev, data)) {
                 moveFile(target, file);
             }
+            $('.drag-active').removeClass('drag-active');
             return false;
         }).on('dnd_move.vakata', function(e, data) {
-            let target = $(data.event.target);
             let file = $(data.element);
-            if(target.closest('.jstree-hovered:not(.jstree-clicked)').length && file.hasClass('file')) {
-                data.helper.find('.jstree-icon').removeClass('jstree-er').addClass('jstree-ok');
+            if(file.hasClass('file')) {
+                vakataDndMoveFile(e, data);
             } else {
-                data.helper.find('.jstree-icon').removeClass('jstree-ok').addClass('jstree-er');
+                vakataDndMoveFolder(e, data);
             }
         });
+    }
+
+
+    function vakataDndStopFolder(ev, data) {
+        let target = $(data.event.target).closest('a');
+        let file = $(data.element);
+
+        if(file.attr('id') === 'j1_1') { //cannot drag the main folder
+            return false;
+        }
+
+        let conditions =
+            file.closest('.dir').length //dragged must be of class dir
+            && target.closest('.dir').length // target must be of class dir
+            && !target.closest('.dir').hasClass('drag-active') // but not the dragged one
+            && !$.contains(file.closest('.dir').get(0), target.closest('.dir').get(0)); //and the target must not be descedant of the dragged
+
+        return conditions;
+    }
+
+    function vakataDndStopFile(ev, data) {
+        let target = $(data.event.target).closest('a');
+        let file = $(data.element);
+
+        let conditions = target.closest('.jstree-hovered:not(.jstree-clicked)').length
+            && file.hasClass('file');
+
+        return conditions;
+    }
+
+    function vakataDndMoveFile(ev, data) {
+        let target = $(data.event.target);
+        let file = $(data.element);
+
+        if(target.closest('.jstree-hovered:not(.jstree-clicked)').length && file.hasClass('file')) {
+            data.helper.find('.jstree-icon').removeClass('jstree-er').addClass('jstree-ok');
+        } else {
+            data.helper.find('.jstree-icon').removeClass('jstree-ok').addClass('jstree-er');
+        }
+    }
+
+    function vakataDndMoveFolder(ev, data) {
+        let target = $(data.event.target);
+        let file = $(data.element);
+
+        if(file.attr('id') === 'j1_1') { //cannot drag the main folder
+            $(data.helper).hide();
+        }
+        if(target.closest('.dir').length // target must be of class dir
+            && !target.closest('.dir').hasClass('drag-active') //but not the dragged one
+            && !$.contains(file.closest('.dir').get(0), target.closest('.dir').get(0)) //and the target must not be descedant of the dragged
+        ) {
+            data.helper.find('.jstree-icon').removeClass('jstree-er').addClass('jstree-ok');
+        } else {
+            data.helper.find('.jstree-icon').removeClass('jstree-ok').addClass('jstree-er');
+        }
+
     }
 
     if (tree === true) {
@@ -253,40 +373,6 @@ $(function () {
             } else {
                 $jsDeleteMultipleModal.addClass('disabled');
             }
-        }).on('click', 'button.js-move-modal', function(){
-            let target = $(this);
-            let fileName = target.attr('data-name')+'.'+target.attr('data-extension');
-            let currentPath = '';
-            let dataHref = target.attr('data-href').split('&');
-            dataHref.forEach(function (queryFragment, index) {
-                let queryNVP = queryFragment.split('=');
-                if (queryNVP[0] === 'route') {
-                    currentPath = queryNVP[1];
-                }
-            });
-            $.ajax({
-                data: {
-                    json: 'true',
-                    conf: 'basic_user',
-                    filename: fileName,
-                    currentPath: currentPath == '' ? '/': currentPath,
-                },
-                url: urlfolderlist,
-                success: function (data, textStatus, jqXHR) {
-                    let modal = $('#moveFile .modal-body');
-                    modal.html(data.view);
-                },
-                error: function (a, b, c) {
-                }
-            });
-        }).on('click', 'li.ypsa-medialibrary-move span', function(){
-            let target = $(this);
-            let newPath = target.attr('data-path');
-            let parent = target.parents('div#ypsa-move-select');
-            let fileName = parent.attr('data-file');
-
-            $('#moveFile .modal-body').html('');
-            ajaxMoveFile(fileName, newPath);
         });
 
 

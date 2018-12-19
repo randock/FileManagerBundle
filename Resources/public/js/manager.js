@@ -86,7 +86,7 @@ $(function () {
             },
             url: urlmovefolder,
             success:function(data){
-                window.location.reload();
+                window.location.replace(urlclear);
             },
             error:function(a,b,c){
             }

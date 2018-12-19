@@ -128,9 +128,11 @@
         var tree = {{ fileManager.tree ? 'true' : 'false' }}
         var moduleName = '{{ fileManager.module ? fileManager.module : 0 }}';
         var successMessage = '{{ 'file.add.success'|trans }}';
+        var urlclear = "{{ path('file_manager')|e('js') }}";
         var url = "{{ path('file_manager', fileManager.queryParameters|merge({'json':true}))|e('js') }}"
         var urldelete = "{{ path('file_manager_delete', fileManager.queryParameters )|e('js') }}"
         var urlmove = "{{ path('file_manager_move', fileManager.queryParameters )|e('js') }}"
+        var urlmovefolder = "{{ path('file_manager_move_folder', fileManager.queryParameters )|e('js') }}"
         var urlfolderlist = "{{ path('file_manager_folder_list', fileManager.queryParameters )|e('js') }}"
         var deleteMessage = "{{ 'title.delete'|trans }}"
         var renameMessage = "{{ 'title.rename.file'|trans }}"

@@ -59,21 +59,6 @@
                     <span class="fa fa-edit"></span>
                     </button>
                 </span>
-                <span data-toggle="tooltip" title="{{ 'title.move.file'|trans }}">
-                    <button type="button"
-                            class="btn btn-sm btn-default js-move-modal"
-                            data-trigger="click"
-                            data-container="body"
-                            data-toggle="modal"
-                            data-target="#moveFile"
-                            data-placement="left"
-                            data-html="true"
-                            data-name='{{ file.basename('.'~file.extension) }}'
-                            data-extension='{{ file.extension }}'
-                            data-href='{{ path('file_manager_move', fileManager.queryParameters|merge({'fileName':file.fileName})) }}'>
-                    <span class="fa fa-edit"></span>
-                    </button>
-                </span>
                 {% if file.type == "file" %}
                     <a data-placement="left" title="{{ 'title.download'|trans }}" class="btn btn-sm btn-default js-download"
                        href="{{ path('file_manager_file', fileManager.queryParameters|merge({'fileName':file.fileName})) }}" download>

@@ -233,7 +233,7 @@ $(function () {
                     }
                     return true;
                 }
-            },
+            }
         }).bind("changed.jstree", function (e, data) {
             if (data.node) {
                 document.location = data.node.a_attr.href;
@@ -246,10 +246,6 @@ $(function () {
 
             let target = $(data.event.target).closest('a');
             let file = $(data.element);
-
-            if(file.attr('id') === 'j1_1_anchor') {
-                return false;
-            }
 
             if (vakataDndStopFolder(ev, data)){
                 moveFolder(target, file.find('a'));

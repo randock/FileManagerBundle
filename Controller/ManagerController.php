@@ -360,7 +360,6 @@ class ManagerController extends Controller
 
         //moving to inner folder, recursion
         if (strpos($destinationParameter, $originParameter ) === 0 && strpos(str_replace($originParameter, '', $destinationParameter), '/') !== false) {
-            unset($queryParameters['route']);
             return new Response($redirectTo);
         }
 
@@ -374,7 +373,6 @@ class ManagerController extends Controller
 
         //exit if we're moving to the same location we are
         if (implode('/', $expOrig) === $destinationParameter) {
-            unset($queryParameters['route']);
             return new Response($redirectTo);
         }
 
@@ -407,7 +405,7 @@ class ManagerController extends Controller
         }catch(\Exception $e){
 
         }
-        unset($queryParameters['route']);
+
         return new Response($redirectTo);
     }
 

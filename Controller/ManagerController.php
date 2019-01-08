@@ -306,74 +306,6 @@ class ManagerController extends AbstractController
     }
 
 
-
-    /**
-     * @Route("/folderList/", name="file_manager_folder_list")
-     *
-     * @param Request $request
-     * @throws \Exception
-     *
-     * @return JsonResponse
-     */
-    public function getFolderListAction(Request $request)
-    {
-        $queryParameters = $request->query->all();
-        $params = [];
-        $params['filename'] = $queryParameters['filename'];
-        $params['currentPath'] = $queryParameters['currentPath'];
-        $fileManager = $this->newFileManager($queryParameters);
-        $params['directories'] = $this->retrieveFolderList($fileManager->getDirName(), DIRECTORY_SEPARATOR, $fileManager->getBaseName());
-        $view = $this->renderView('@ArtgrisFileManager/views/_move_form.html.twig', $params);
-
-        return new JsonResponse(['view' => $view]);
-    }
-
-
-
-    /**
-     * @param string      $path
-     * @param string      $parent
-     * @param null|string $baseFolderName
-     *
-     * @return array|null
-     */
-    private function retrieveFolderList(
-        $path,
-        $parent = \DIRECTORY_SEPARATOR,
-        $baseFolderName = null
-    ) {
-        $directoriesFinder = new Finder();
-        $directoriesFinder->in($path)
-            ->ignoreUnreadableDirs()
-            ->exclude(FileTypeService::THUMBNAIL_FOLDER_PREFIX)
-            ->directories()
-            ->depth(0)
-            ->sortByType()
-            ->filter(function (SplFileInfo $file) {
-                return $file->isReadable();
-            });
-
-        if ($baseFolderName) {
-            $directoriesFinder->name($baseFolderName);
-        }
-        $directoriesList = [];
-
-        /** @var SplFileInfo $directory */
-        foreach ($directoriesFinder as $directory) {
-            $fileName = $baseFolderName ? '' : $parent . $directory->getFilename();
-            $directoriesList[] = [
-                'text' => $directory->getFilename(),
-                'filename' => empty($fileName) ? '/' : $fileName,
-                'children' => $this->retrieveFolderList(
-                    $directory->getPathname(),
-                    $fileName . \DIRECTORY_SEPARATOR
-                ),
-            ];
-        }
-
-        return $directoriesList;
-    }
-
     /**
      * @Route("/move/", name="file_manager_move")
      *
@@ -393,7 +325,88 @@ class ManagerController extends AbstractController
         return new Response();
     }
 
+    /**
+     * @Route("/moveFolder/", name="file_manager_move_folder")
+     *
+     * @param Request $request
+     *
+     * @return Response
+     *
+     * @throws \Exception
+     */
+    public function moveFolderAction(Request $request)
+    {
+        $queryParameters = $request->query->all();
+        unset($queryParameters['json']);
+        unset($queryParameters['route']);
+        $originParameter = $queryParameters['origin'];
+        $destinationParameter = $queryParameters['destination'];
+        unset($queryParameters['origin']);
+        unset($queryParameters['destination']);
 
+        $fs = $this->newFileManager($queryParameters);
+
+        $redirectTo = $this->generateUrl('file_manager', $fs->getQueryParameters());
+
+        $destIsRoot = false;
+        if($destinationParameter === '/') {
+            $destIsRoot = true;
+        }
+
+        if($originParameter === '/') {
+            return new Response($redirectTo);
+        }
+
+        //moving to inner folder, recursion
+        if (strpos($destinationParameter, $originParameter ) === 0 && strpos(str_replace($originParameter, '', $destinationParameter), '/') !== false) {
+            return new Response($redirectTo);
+        }
+
+        $expOrig = explode('/', $originParameter);
+
+        $lastElem = array_pop($expOrig);
+
+        if($destIsRoot && count($expOrig) === 1) {
+            $expOrig[] = '';
+        }
+
+        //exit if we're moving to the same location we are
+        if (implode('/', $expOrig) === $destinationParameter) {
+            return new Response($redirectTo);
+        }
+
+
+        $filesystem = new Filesystem();
+
+        $origin = sprintf(
+            '%s%s',
+            $fs->getBasePath(),
+            urldecode($originParameter)
+        );
+
+        $destination = sprintf(
+            '%s%s%s%s',
+            $fs->getBasePath(),
+            urldecode($destinationParameter),
+            DIRECTORY_SEPARATOR,
+            urldecode($lastElem)
+        );
+
+        while ($filesystem->exists($destination)) {
+            $destination = sprintf(
+                '%s_copy',
+                $destination
+            );
+        }
+        try {
+            $filesystem->mirror($origin, $destination);
+            $filesystem->remove($origin);
+        }catch(\Exception $e){
+
+        }
+
+        return new Response($redirectTo);
+    }
 
     /**
      * @Route("/file/{fileName}", name="file_manager_file")
@@ -547,6 +560,7 @@ class ManagerController extends AbstractController
         }
         $directoriesList = null;
 
+
         foreach ($directories as $directory) {
             /** @var SplFileInfo $directory */
             $fileName = $baseFolderName ? '' : $parent.$directory->getFilename();
@@ -563,6 +577,7 @@ class ManagerController extends AbstractController
                 'text' => $directory->getFilename().$fileSpan,
                 'icon' => 'fa fa-folder-o',
                 'children' => $this->retrieveSubDirectories($fileManager, $directory->getPathname(), $fileName.DIRECTORY_SEPARATOR),
+                'li_attr' => ['class' => 'dir'],
                 'a_attr' => [
                     'href' => $fileName ? $this->generateUrl('file_manager', $queryParameters) : $this->generateUrl('file_manager', $queryParametersRoute),
                 ], 'state' => [

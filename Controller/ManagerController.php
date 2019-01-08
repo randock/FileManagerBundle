@@ -7,9 +7,8 @@ use Artgris\Bundle\FileManagerBundle\Helpers\File;
 use Artgris\Bundle\FileManagerBundle\Helpers\FileManager;
 use Artgris\Bundle\FileManagerBundle\Helpers\UploadHandler;
 use Artgris\Bundle\FileManagerBundle\Twig\OrderExtension;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
-use Symfony\Bundle\FrameworkBundle\Controller\Controller;
+use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\EventDispatcher\GenericEvent;
 use Symfony\Component\Filesystem\Exception\IOException;
 use Symfony\Component\Filesystem\Exception\IOExceptionInterface;
@@ -31,7 +30,7 @@ use Artgris\Bundle\FileManagerBundle\service\FileTypeService;
 /**
  * @author Arthur Gribet <a.gribet@gmail.com>
  */
-class ManagerController extends Controller
+class ManagerController extends AbstractController
 {
     /**
      * @var FileManager
@@ -427,10 +426,9 @@ class ManagerController extends Controller
     }
 
     /**
-     * @Route("/delete/", name="file_manager_delete")
+     * @Route("/delete/", name="file_manager_delete", methods={"DELETE"})
      *
      * @param Request $request
-     * @Method("DELETE")
      *
      * @return \Symfony\Component\HttpFoundation\RedirectResponse
      *

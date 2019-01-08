@@ -426,10 +426,9 @@ class ManagerController extends AbstractController
     }
 
     /**
-     * @Route("/delete/", name="file_manager_delete")
+     * @Route("/delete/", name="file_manager_delete", methods={"DELETE"})
      *
      * @param Request $request
-     * @Method("DELETE")
      *
      * @return \Symfony\Component\HttpFoundation\RedirectResponse
      *

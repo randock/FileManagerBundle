@@ -646,7 +646,7 @@ class ManagerController extends AbstractController
         if (!isset($queryParameters['conf'])) {
             throw new \RuntimeException('Please define a conf parameter in your route');
         }
-        $webDir = $this->getParameter('artgris_file_manager')['web_dir'];
+        $webDir = $this->container->getParameter('artgris_file_manager')['web_dir'];
 
         $this->fileManager = new FileManager($queryParameters, $this->getBasePath($queryParameters), $this->getKernelRoute(), $this->get('router'), $webDir);
 

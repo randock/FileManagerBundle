@@ -611,7 +611,7 @@ class ManagerController extends AbstractController
     private function getBasePath($queryParameters)
     {
         $conf = $queryParameters['conf'];
-        $managerConf = $this->getParameter('artgris_file_manager')['conf'];
+        $managerConf = $this->container->getParameter('artgris_file_manager')['conf'];
         if (isset($managerConf[$conf]['dir'])) {
             return $managerConf[$conf];
         }
@@ -631,7 +631,7 @@ class ManagerController extends AbstractController
      */
     private function getKernelRoute()
     {
-        return $this->getParameter('kernel.root_dir');
+        return $this->container->getParameter('kernel.root_dir');
     }
 
     /**

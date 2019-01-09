@@ -611,7 +611,7 @@ class ManagerController extends AbstractController
     private function getBasePath($queryParameters)
     {
         $conf = $queryParameters['conf'];
-        $managerConf = $this->getParameter('artgris_file_manager')['conf'];
+        $managerConf = $this->container->getParameter('artgris_file_manager')['conf'];
         if (isset($managerConf[$conf]['dir'])) {
             return $managerConf[$conf];
         }
@@ -631,7 +631,7 @@ class ManagerController extends AbstractController
      */
     private function getKernelRoute()
     {
-        return $this->getParameter('kernel.root_dir');
+        return $this->container->getParameter('kernel.root_dir');
     }
 
     /**
@@ -646,7 +646,7 @@ class ManagerController extends AbstractController
         if (!isset($queryParameters['conf'])) {
             throw new \RuntimeException('Please define a conf parameter in your route');
         }
-        $webDir = $this->getParameter('artgris_file_manager')['web_dir'];
+        $webDir = $this->container->getParameter('artgris_file_manager')['web_dir'];
 
         $this->fileManager = new FileManager($queryParameters, $this->getBasePath($queryParameters), $this->getKernelRoute(), $this->get('router'), $webDir);
 

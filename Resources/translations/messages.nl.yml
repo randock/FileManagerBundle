@@ -1,0 +1,57 @@
+file:
+  add:
+    success: was uploaded successfully
+  renamed:
+    success: Bestand is hernoemd
+    danger: Het bestand bestaat al of je hebt geen rechten om dit bestand te hernoemen
+    unauthorized: De bestanden bestaan niet meer of je hebt geen rechten om deze pagina te bekijken
+    nochanged: Geen wijziging gevonden
+  deleted:
+    success: De bestanden zijn succesvol verwijderd
+    danger: De bestanden bestaan niet meer of je hebt geen rechten om deze pagina te bekijken
+    unauthorized: De bestanden bestaan niet meer of je hebt geen rechten om deze pagina te bekijken
+folder:
+  add:
+    danger: "Er is een fout opgetreden bij het aanmaken van: %message%"
+    success: De map is aangemaakt
+  deleted:
+    success: De map is succesvol verwijderd
+    unauthorized: De map bestaat niet meer of je hebt geen rechten om deze pagina te bekijken
+button:
+  cancel: ANNULEER
+  refresh: Vernieuw
+  parent: Bovenliggende map
+  save: OPSLAAN
+  add:
+    files: Bestanden toevoegen...
+    folder: Nieuwe map...
+  delete:
+    current: Verwijder huidige map
+    selected: Verwijder geselecteerde bestanden
+    action: VERWIJDEREN
+  rename:
+    action: HERNOEMEN
+  tree: Tree
+title:
+  add:
+    folder: Nieuwe map
+  rename:
+    file: Hernoemen
+  delete: Verwijderen
+  download: Download
+input:
+  default: Naamloze map
+table:
+  name: Bestandsnaam
+  date: Datum
+  size: Bestandsgrootte
+  dimension: Afmetingen
+  actions: Acties
+confirm:
+  delete:  Weet je zeker dat je dit wilt verwijderen?
+size:
+  mb: MB
+  kb: kB
+select-all: Selecteer alles
+upload:
+  exception_move_uploaded_file: Geen toestemming

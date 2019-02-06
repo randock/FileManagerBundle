@@ -6,11 +6,19 @@ $(function () {
         switch (key) {
             case 'edit':
                 var $renameModalButton = opt.$trigger.find(".js-rename-modal")
+                if($renameModalButton.length === 0) {
+                    $renameModalButton = $renameModalButton.prevObject
+                    $renameModalButton.data('href', $renameModalButton.data('renamehref'));
+                }
                 renameFile($renameModalButton)
                 $renameModal.modal("show");
                 break;
             case 'delete':
                 var $deleteModalButton = opt.$trigger.find(".js-delete-modal")
+                if($deleteModalButton.length === 0) {
+                    $deleteModalButton = $deleteModalButton.prevObject
+                    $deleteModalButton.data('href', $deleteModalButton.data('deletehref'));
+                }
                 deleteFile($deleteModalButton)
                 $deleteModal.modal("show");
                 break;

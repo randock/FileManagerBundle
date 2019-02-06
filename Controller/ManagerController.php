@@ -241,7 +241,9 @@ class ManagerController extends AbstractController
                     $fs = new Filesystem();
                     try {
                         $fs->rename($oldFilePath, $newFilePath);
-                        $fs->rename($oldThumbPath, $newThumbPath);
+                        if ($extension !== '') {
+                            $fs->rename($oldThumbPath, $newThumbPath);
+                        }
                         $this->addFlash('success', $translator->trans('file.renamed.success'));
                         //File has been renamed successfully
                     } catch (IOException $exception) {
@@ -570,7 +572,13 @@ class ManagerController extends AbstractController
                 'text' => $directory->getFilename().$fileSpan,
                 'icon' => 'fa fa-folder-o',
                 'children' => $this->retrieveSubDirectories($fileManager, $directory->getPathname(), $fileName.DIRECTORY_SEPARATOR),
-                'li_attr' => ['class' => 'dir'],
+                'li_attr' => [
+                    'class' => 'dir',
+                    'data-name' => rawurlencode(trim($fileName, '/')),
+                    'data-href' => $fileName ? $this->generateUrl('file_manager', $queryParameters) : $this->generateUrl('file_manager', $queryParametersRoute),
+                    'data-deletehref' => $fileName ? $this->generateUrl('file_manager_delete', $queryParametersRoute + ['delete[]' => trim($fileName, '/')]) : $this->generateUrl('file_manager', $queryParametersRoute),
+                    'data-renamehref' => $fileName ? $this->generateUrl('file_manager_rename', $queryParametersRoute + ['fileName' => trim($fileName, '/')]) : $this->generateUrl('file_manager', $queryParametersRoute),
+                ],
                 'a_attr' => [
                     'href' => $fileName ? $this->generateUrl('file_manager', $queryParameters) : $this->generateUrl('file_manager', $queryParametersRoute),
                 ], 'state' => [

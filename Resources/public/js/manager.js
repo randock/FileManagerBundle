@@ -52,7 +52,7 @@ $(function () {
         $.ajax({
             data: {
                 json: 'true',
-                conf: 'basic_user',
+                conf: conf,
                 fileName: fileName,
                 newPath: newPath
             },
@@ -88,7 +88,7 @@ $(function () {
         $.ajax({
             data: {
                 json: 'true',
-                conf: 'basic_user',
+                conf: conf,
                 origin: origin,
                 destination: destination
             },

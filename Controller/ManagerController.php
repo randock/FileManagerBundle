@@ -135,6 +135,7 @@ class ManagerController extends AbstractController
         }
 
         $parameters = [
+            'confType' => $fileManager->getQueryParameter('conf'),
             'fileManager' => $fileManager,
             'fileArray' => $fileArray,
             'formDelete' => $formDelete,

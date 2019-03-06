@@ -197,7 +197,7 @@ class ManagerController extends AbstractController
     }
 
     /**
-     * @Route("/rename/{fileName}", name="file_manager_rename")
+     * @Route("/rename/{fileName<.+>}", name="file_manager_rename")
      *
      * @param Request $request
      * @param $fileName
@@ -565,6 +565,8 @@ class ManagerController extends AbstractController
             $queryParameters['route'] = $fileName;
             $queryParametersRoute = $queryParameters;
             unset($queryParametersRoute['route']);
+            $queryParametersParentRoute = $queryParameters;
+            $queryParametersParentRoute['route'] = $parent;
 
             $filesNumber = $this->retrieveFilesNumber($directory->getPathname(), $fileManager->getRegex());
             $fileSpan = $filesNumber > 0 ? " <span class='label label-default'>{$filesNumber}</span>" : '';
@@ -575,10 +577,11 @@ class ManagerController extends AbstractController
                 'children' => $this->retrieveSubDirectories($fileManager, $directory->getPathname(), $fileName.DIRECTORY_SEPARATOR),
                 'li_attr' => [
                     'class' => 'dir',
-                    'data-name' => rawurlencode(trim($fileName, '/')),
+                    'data-name' => trim($directory->getFilename(), '/'),
+                    'data-path' => $fileName,
                     'data-href' => $fileName ? $this->generateUrl('file_manager', $queryParameters) : $this->generateUrl('file_manager', $queryParametersRoute),
                     'data-deletehref' => $fileName ? $this->generateUrl('file_manager_delete', $queryParametersRoute + ['delete[]' => trim($fileName, '/')]) : $this->generateUrl('file_manager', $queryParametersRoute),
-                    'data-renamehref' => $fileName ? $this->generateUrl('file_manager_rename', $queryParametersRoute + ['fileName' => trim($fileName, '/')]) : $this->generateUrl('file_manager', $queryParametersRoute),
+                    'data-renamehref' => $fileName ? $this->generateUrl('file_manager_rename', $queryParametersParentRoute + ['fileName' => trim($directory->getFilename(), '/')]) : $this->generateUrl('file_manager', $queryParametersRoute),
                 ],
                 'a_attr' => [
                     'href' => $fileName ? $this->generateUrl('file_manager', $queryParameters) : $this->generateUrl('file_manager', $queryParametersRoute),

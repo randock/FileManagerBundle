@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Artgris\Bundle\FileManagerBundle\Event\Update\ValueObject;
+namespace Artgris\Bundle\FileManagerBundle\Event\Upload\ValueObject;
 
 class UploadedFile
 {

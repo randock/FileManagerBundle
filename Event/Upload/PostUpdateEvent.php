@@ -2,9 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Artgris\Bundle\FileManagerBundle\Event\Update;
+namespace Artgris\Bundle\FileManagerBundle\Event\Upload;
 
-use Artgris\Bundle\FileManagerBundle\Event\Update\ValueObject\UploadedFile;
+use Artgris\Bundle\FileManagerBundle\Event\Upload\ValueObject\UploadedFile;
+use Artgris\Bundle\FileManagerBundle\Helpers\FileManager;
 use Symfony\Component\EventDispatcher\Event;
 
 class PostUpdateEvent extends Event
@@ -22,11 +23,17 @@ class PostUpdateEvent extends Event
     private $response;
 
     /**
+     * @var FileManager
+     */
+    private $fileManager;
+
+    /**
      * PostUpdateEvent constructor.
      *
-     * @param array $response
+     * @param FileManager $fileManager
+     * @param array       $response
      */
-    public function __construct(array $response)
+    public function __construct(FileManager $fileManager, array $response)
     {
         $this->response = $response;
         if (isset($response['files'])) {
@@ -35,6 +42,15 @@ class PostUpdateEvent extends Event
                 $this->files = new UploadedFile($file);
             }
         }
+        $this->fileManager = $fileManager;
+    }
+
+    /**
+     * @return FileManager
+     */
+    public function getFileManager(): FileManager
+    {
+        return $this->fileManager;
     }
 
     /**

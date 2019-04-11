@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Artgris\Bundle\FileManagerBundle\Event\Update;
+namespace Artgris\Bundle\FileManagerBundle\Event\Upload;
 
 use Artgris\Bundle\FileManagerBundle\Helpers\FileManager;
 use Symfony\Component\EventDispatcher\Event;

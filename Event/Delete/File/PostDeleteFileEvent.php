@@ -32,19 +32,34 @@ class PostDeleteFileEvent extends Event
     private $success;
 
     /**
+     * @var string
+     */
+    private $filename;
+
+    /**
      * PostDeleteFileEvent constructor.
      *
      * @param FileManager $fileManager
+     * @param string      $filename
      * @param string      $filePath
      * @param string      $thumbPath
      * @param bool        $success
      */
-    public function __construct(FileManager $fileManager, string $filePath, string $thumbPath, bool $success)
+    public function __construct(FileManager $fileManager, string $filename, string $filePath, string $thumbPath, bool $success)
     {
         $this->fileManager = $fileManager;
         $this->filePath = $filePath;
         $this->thumbPath = $thumbPath;
         $this->success = $success;
+        $this->filename = $filename;
+    }
+
+    /**
+     * @return string
+     */
+    public function getFilename(): string
+    {
+        return $this->filename;
     }
 
     /**

@@ -6,23 +6,20 @@ use Artgris\Bundle\FileManagerBundle\Event\Delete\File\PostDeleteFileEvent;
 use Artgris\Bundle\FileManagerBundle\Event\Delete\File\PreDeleteFileEvent;
 use Artgris\Bundle\FileManagerBundle\Event\Delete\Folder\PostDeleteFolderEvent;
 use Artgris\Bundle\FileManagerBundle\Event\Delete\Folder\PreDeleteFolderEvent;
-use Artgris\Bundle\FileManagerBundle\Event\FileManagerEvents;
 use Artgris\Bundle\FileManagerBundle\Event\Move\File\PostMoveFileEvent;
 use Artgris\Bundle\FileManagerBundle\Event\Move\File\PreMoveFileEvent;
 use Artgris\Bundle\FileManagerBundle\Event\Move\Folder\PostMoveFolderEvent;
 use Artgris\Bundle\FileManagerBundle\Event\Move\Folder\PreMoveFolderEvent;
 use Artgris\Bundle\FileManagerBundle\Event\Rename\PostRenameEvent;
 use Artgris\Bundle\FileManagerBundle\Event\Rename\PreRenameEvent;
-use Artgris\Bundle\FileManagerBundle\Event\Update\PostUpdateEvent;
-use Artgris\Bundle\FileManagerBundle\Event\Update\PreUpdateEvent;
+use Artgris\Bundle\FileManagerBundle\Event\Upload\PostUpdateEvent;
+use Artgris\Bundle\FileManagerBundle\Event\Upload\PreUpdateEvent;
 use Artgris\Bundle\FileManagerBundle\Helpers\File;
 use Artgris\Bundle\FileManagerBundle\Helpers\FileManager;
 use Artgris\Bundle\FileManagerBundle\Helpers\UploadHandler;
 use Artgris\Bundle\FileManagerBundle\Twig\OrderExtension;
 use Symfony\Component\EventDispatcher\Event;
-use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\EventDispatcher\GenericEvent;
 use Symfony\Component\Filesystem\Exception\IOException;
 use Symfony\Component\Filesystem\Exception\IOExceptionInterface;
 use Symfony\Component\Filesystem\Filesystem;
@@ -337,7 +334,7 @@ class ManagerController extends AbstractController
             }
         }
 
-        $this->dispatch(PostUpdateEvent::NAME, new PostUpdateEvent($response));
+        $this->dispatch(PostUpdateEvent::NAME, new PostUpdateEvent($fileManager, $response));
 
         return new JsonResponse($response);
     }
@@ -505,7 +502,7 @@ class ManagerController extends AbstractController
                     if (0 !== strpos($filePath, $fileManager->getCurrentPath())) {
                         $this->addFlash('danger', 'file.deleted.danger');
                     } else {
-                        $this->dispatch(PreDeleteFileEvent::NAME, new PreDeleteFileEvent($fileManager, $filePath, $thumbPath));
+                        $this->dispatch(PreDeleteFileEvent::NAME, new PreDeleteFileEvent($fileManager, $fileName, $filePath, $thumbPath));
                         try {
                             $fs->remove($filePath);
                             $fs->remove($thumbPath);
@@ -515,7 +512,7 @@ class ManagerController extends AbstractController
                             $this->addFlash('danger', 'file.deleted.unauthorized');
                             $deleted = false;
                         }
-                        $this->dispatch(PostDeleteFileEvent::NAME, new PostDeleteFileEvent($fileManager, $filePath, $thumbPath, $deleted));
+                        $this->dispatch(PostDeleteFileEvent::NAME, new PostDeleteFileEvent($fileManager, $fileName, $filePath, $thumbPath, $deleted));
                     }
                 }
                 if ($is_delete) {

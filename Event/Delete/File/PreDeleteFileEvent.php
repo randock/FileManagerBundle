@@ -28,17 +28,32 @@ class PreDeleteFileEvent extends Event
     private $thumbPath;
 
     /**
+     * @var string
+     */
+    private $filename;
+
+    /**
      * PostDeleteFileEvent constructor.
      *
      * @param FileManager $fileManager
+     * @param string      $filename
      * @param string      $filePath
      * @param string      $thumbPath
      */
-    public function __construct(FileManager $fileManager, string $filePath, string $thumbPath)
+    public function __construct(FileManager $fileManager, string $filename, string $filePath, string $thumbPath)
     {
         $this->fileManager = $fileManager;
         $this->filePath = $filePath;
         $this->thumbPath = $thumbPath;
+        $this->filename = $filename;
+    }
+
+    /**
+     * @return string
+     */
+    public function getFilename(): string
+    {
+        return $this->filename;
     }
 
     /**

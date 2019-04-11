@@ -2,11 +2,24 @@
 
 namespace Artgris\Bundle\FileManagerBundle\Controller;
 
+use Artgris\Bundle\FileManagerBundle\Event\Delete\File\PostDeleteFileEvent;
+use Artgris\Bundle\FileManagerBundle\Event\Delete\File\PreDeleteFileEvent;
+use Artgris\Bundle\FileManagerBundle\Event\Delete\Folder\PostDeleteFolderEvent;
+use Artgris\Bundle\FileManagerBundle\Event\Delete\Folder\PreDeleteFolderEvent;
 use Artgris\Bundle\FileManagerBundle\Event\FileManagerEvents;
+use Artgris\Bundle\FileManagerBundle\Event\Move\File\PostMoveFileEvent;
+use Artgris\Bundle\FileManagerBundle\Event\Move\File\PreMoveFileEvent;
+use Artgris\Bundle\FileManagerBundle\Event\Move\Folder\PostMoveFolderEvent;
+use Artgris\Bundle\FileManagerBundle\Event\Move\Folder\PreMoveFolderEvent;
+use Artgris\Bundle\FileManagerBundle\Event\Rename\PostRenameEvent;
+use Artgris\Bundle\FileManagerBundle\Event\Rename\PreRenameEvent;
+use Artgris\Bundle\FileManagerBundle\Event\Update\PostUpdateEvent;
+use Artgris\Bundle\FileManagerBundle\Event\Update\PreUpdateEvent;
 use Artgris\Bundle\FileManagerBundle\Helpers\File;
 use Artgris\Bundle\FileManagerBundle\Helpers\FileManager;
 use Artgris\Bundle\FileManagerBundle\Helpers\UploadHandler;
 use Artgris\Bundle\FileManagerBundle\Twig\OrderExtension;
+use Symfony\Component\EventDispatcher\Event;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\EventDispatcher\GenericEvent;
@@ -218,6 +231,7 @@ class ManagerController extends AbstractController
             $extension = $data['extension'] ? '.'.$data['extension'] : '';
             $newfileName = $data['name'].$extension;
             if ($newfileName !== $fileName && isset($data['name'])) {
+                $success = false;
                 $fileManager = $this->newFileManager($queryParameters);
                 $newFilePath = sprintf("%s%s%s", $fileManager->getCurrentPath(), DIRECTORY_SEPARATOR, $newfileName);
                 $newThumbPath = sprintf("%s%s%s%s%s",
@@ -240,20 +254,47 @@ class ManagerController extends AbstractController
                     $this->addFlash('danger', $translator->trans('file.renamed.unauthorized'));
                 } else {
                     $fs = new Filesystem();
+                    $this->dispatch(
+                        PreRenameEvent::NAME,
+                        new PreRenameEvent(
+                            $fileManager,
+                            $fileName,
+                            $newfileName,
+                            $oldFilePath,
+                            $newFilePath,
+                            $oldThumbPath,
+                            $newThumbPath
+                        )
+                    );
                     try {
                         $fs->rename($oldFilePath, $newFilePath);
                         if ($extension !== '') {
                             $fs->rename($oldThumbPath, $newThumbPath);
                         }
                         $this->addFlash('success', $translator->trans('file.renamed.success'));
+                        $success = true;
                         //File has been renamed successfully
                     } catch (IOException $exception) {
                         $this->addFlash('danger', $translator->trans('file.renamed.danger'));
                     }
                 }
+                $this->dispatch(
+                    PostRenameEvent::NAME,
+                    new PostRenameEvent(
+                        $fileManager,
+                        $fileName,
+                        $newfileName,
+                        $oldFilePath,
+                        $newFilePath,
+                        $oldThumbPath,
+                        $newThumbPath,
+                        $success
+                    )
+                );
             } else {
                 $this->addFlash('warning', $translator->trans('file.renamed.nochanged'));
             }
+
         }
 
         return $this->redirectToRoute('file_manager', $queryParameters);
@@ -282,8 +323,7 @@ class ManagerController extends AbstractController
             $options += $fileManager->getConfiguration()['upload'];
         }
 
-        $this->dispatch(FileManagerEvents::PRE_UPDATE, ['options' => &$options]);
-
+        $this->dispatch(PreUpdateEvent::NAME, new PreUpdateEvent($fileManager, $options));
         $uploadHandler = new UploadHandler($options);
         $response = $uploadHandler->response;
 
@@ -297,7 +337,7 @@ class ManagerController extends AbstractController
             }
         }
 
-        $this->dispatch(FileManagerEvents::POST_UPDATE, ['response' => &$response]);
+        $this->dispatch(PostUpdateEvent::NAME, new PostUpdateEvent($response));
 
         return new JsonResponse($response);
     }
@@ -395,13 +435,16 @@ class ManagerController extends AbstractController
                 $destination
             );
         }
+
+        $this->dispatch(PreMoveFolderEvent::NAME, new PreMoveFolderEvent($fs, $origin, $destination));
         try {
             $filesystem->mirror($origin, $destination);
             $filesystem->remove($origin);
-        }catch(\Exception $e){
-
+            $success = true;
+        } catch(\Exception $e) {
+            $success = false;
         }
-
+        $this->dispatch(PostMoveFolderEvent::NAME, new PostMoveFolderEvent($fs, $origin, $destination, $success));
         return new Response($redirectTo);
     }
 
@@ -462,15 +505,17 @@ class ManagerController extends AbstractController
                     if (0 !== strpos($filePath, $fileManager->getCurrentPath())) {
                         $this->addFlash('danger', 'file.deleted.danger');
                     } else {
-                        $this->dispatch(FileManagerEvents::PRE_DELETE_FILE);
+                        $this->dispatch(PreDeleteFileEvent::NAME, new PreDeleteFileEvent($fileManager, $filePath, $thumbPath));
                         try {
                             $fs->remove($filePath);
                             $fs->remove($thumbPath);
                             $is_delete = true;
+                            $deleted = true;
                         } catch (IOException $exception) {
                             $this->addFlash('danger', 'file.deleted.unauthorized');
+                            $deleted = false;
                         }
-                        $this->dispatch(FileManagerEvents::POST_DELETE_FILE);
+                        $this->dispatch(PostDeleteFileEvent::NAME, new PostDeleteFileEvent($fileManager, $filePath, $thumbPath, $deleted));
                     }
                 }
                 if ($is_delete) {
@@ -478,15 +523,18 @@ class ManagerController extends AbstractController
                 }
                 unset($queryParameters['delete']);
             } else {
-                $this->dispatch(FileManagerEvents::PRE_DELETE_FOLDER);
+                $pathToDelete = $fileManager->getCurrentPath();
+                $this->dispatch(PreDeleteFolderEvent::NAME, new PreDeleteFolderEvent($fileManager, $pathToDelete));
                 try {
-                    $fs->remove($fileManager->getCurrentPath());
+                    $fs->remove($pathToDelete);
                     $this->addFlash('success', 'folder.deleted.success');
+                    $deleted = true;
                 } catch (IOException $exception) {
                     $this->addFlash('danger', 'folder.deleted.unauthorized');
+                    $deleted = false;
                 }
 
-                $this->dispatch(FileManagerEvents::POST_DELETE_FOLDER);
+                $this->dispatch(PostDeleteFolderEvent::NAME, new PostDeleteFolderEvent($fileManager, $pathToDelete, $deleted));
                 $queryParameters['route'] = dirname($fileManager->getCurrentRoute());
                 if ($queryParameters['route'] = '/') {
                     unset($queryParameters['route']);
@@ -659,14 +707,8 @@ class ManagerController extends AbstractController
         return $this->fileManager;
     }
 
-    protected function dispatch($eventName, array $arguments = [])
+    protected function dispatch(string $eventName, Event $event)
     {
-        $arguments = array_replace([
-            'filemanager' => $this->fileManager,
-        ], $arguments);
-
-        $subject = $arguments['filemanager'];
-        $event = new GenericEvent($subject, $arguments);
         $this->get('event_dispatcher')->dispatch($eventName, $event);
     }
 
@@ -728,6 +770,10 @@ class ManagerController extends AbstractController
         }
 
         if (0 === strpos($newFilePath, $fileManager->getBasePath())) {
+            $this->dispatch(
+                PreMoveFileEvent::NAME,
+                new PreMoveFileEvent($fileManager, $fileName, $newFilePath, $oldFilePath, $newThumbPath, $oldThumbPath)
+            );
             try {
                 $filesystem->rename($oldFilePath, $newFilePath);
 
@@ -738,8 +784,22 @@ class ManagerController extends AbstractController
 
                     $filesystem->rename($oldThumbPath, $newThumbPath);
                 }
+                $success = true;
             } catch (IOException $exception) {
+                $success = false;
             }
+            $this->dispatch(
+                PostMoveFileEvent::NAME,
+                new PostMoveFileEvent(
+                    $fileManager,
+                    $fileName,
+                    $newFilePath,
+                    $oldFilePath,
+                    $newThumbPath,
+                    $oldThumbPath,
+                    $success
+                )
+            );
         }
     }
 

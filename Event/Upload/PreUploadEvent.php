@@ -7,7 +7,7 @@ namespace Artgris\Bundle\FileManagerBundle\Event\Upload;
 use Artgris\Bundle\FileManagerBundle\Helpers\FileManager;
 use Symfony\Component\EventDispatcher\Event;
 
-class PreUpdateEvent extends Event
+class PreUploadEvent extends Event
 {
     public const NAME = 'file_manager.pre_update';
 

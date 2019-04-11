@@ -8,7 +8,7 @@ use Artgris\Bundle\FileManagerBundle\Event\Upload\ValueObject\UploadedFile;
 use Artgris\Bundle\FileManagerBundle\Helpers\FileManager;
 use Symfony\Component\EventDispatcher\Event;
 
-class PostUpdateEvent extends Event
+class PostUploadEvent extends Event
 {
     public const NAME = 'file_manager.post_update';
 

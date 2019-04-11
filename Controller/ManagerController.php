@@ -12,8 +12,8 @@ use Artgris\Bundle\FileManagerBundle\Event\Move\Folder\PostMoveFolderEvent;
 use Artgris\Bundle\FileManagerBundle\Event\Move\Folder\PreMoveFolderEvent;
 use Artgris\Bundle\FileManagerBundle\Event\Rename\PostRenameEvent;
 use Artgris\Bundle\FileManagerBundle\Event\Rename\PreRenameEvent;
-use Artgris\Bundle\FileManagerBundle\Event\Upload\PostUpdateEvent;
-use Artgris\Bundle\FileManagerBundle\Event\Upload\PreUpdateEvent;
+use Artgris\Bundle\FileManagerBundle\Event\Upload\PostUploadEvent;
+use Artgris\Bundle\FileManagerBundle\Event\Upload\PreUploadEvent;
 use Artgris\Bundle\FileManagerBundle\Helpers\File;
 use Artgris\Bundle\FileManagerBundle\Helpers\FileManager;
 use Artgris\Bundle\FileManagerBundle\Helpers\UploadHandler;
@@ -321,7 +321,7 @@ class ManagerController extends AbstractController
             $options += $fileManager->getConfiguration()['upload'];
         }
 
-        $this->dispatch(PreUpdateEvent::NAME, new PreUpdateEvent($fileManager, $options));
+        $this->dispatch(PreUploadEvent::NAME, new PreUploadEvent($fileManager, $options));
         $uploadHandler = new UploadHandler($options);
         $response = $uploadHandler->response;
 
@@ -335,7 +335,7 @@ class ManagerController extends AbstractController
             }
         }
 
-        $this->dispatch(PostUpdateEvent::NAME, new PostUpdateEvent($fileManager, $response));
+        $this->dispatch(PostUploadEvent::NAME, new PostUploadEvent($fileManager, $response));
 
         return new JsonResponse($response);
     }

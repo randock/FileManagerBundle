@@ -33,7 +33,7 @@ class PreMoveFolderEvent extends Event
      * @param string      $origin
      * @param string      $destination
      */
-    public function __construct(FileManager $fileManager, string &$origin, string &$destination)
+    public function __construct(FileManager $fileManager, string $origin, string $destination)
     {
         $this->fileManager = $fileManager;
         $this->origin = $origin;
@@ -43,7 +43,7 @@ class PreMoveFolderEvent extends Event
     /**
      * @return FileManager
      */
-    public function &getFileManager(): FileManager
+    public function getFileManager(): FileManager
     {
         return $this->fileManager;
     }

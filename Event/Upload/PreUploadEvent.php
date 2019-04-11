@@ -22,7 +22,7 @@ class PreUploadEvent extends Event
     private $options;
 
     /**
-     * PreUpdateEvent constructor.
+     * PreUploadEvent constructor.
      *
      * @param FileManager $fileManager
      * @param array       $options

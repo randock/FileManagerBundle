@@ -11,11 +11,13 @@ class PreDeleteFileEventTest extends \PHPUnit_Framework_TestCase
     public function testGetters()
     {
         $fileManager = $this->createMock(FileManager::class);
+        $filename = 'myFile.txt';
         $filePath = 'path/to/file';
         $thumbPath = 'path/to/thumb';
-        $preDeleteFileEvent = new PreDeleteFileEvent($fileManager, $filePath, $thumbPath);
+        $preDeleteFileEvent = new PreDeleteFileEvent($fileManager, $filename, $filePath, $thumbPath);
 
         $this->assertSame($fileManager, $preDeleteFileEvent->getFileManager());
+        $this->assertSame($filename, $preDeleteFileEvent->getFilename());
         $this->assertSame($filePath, $preDeleteFileEvent->getFilePath());
         $this->assertSame($thumbPath, $preDeleteFileEvent->getThumbPath());
     }

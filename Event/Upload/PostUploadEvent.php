@@ -28,7 +28,7 @@ class PostUploadEvent extends Event
     private $fileManager;
 
     /**
-     * PostUpdateEvent constructor.
+     * PostUploadEvent constructor.
      *
      * @param FileManager $fileManager
      * @param array       $response
@@ -39,7 +39,7 @@ class PostUploadEvent extends Event
         if (isset($response['files'])) {
 
             foreach ($response['files'] as $file) {
-                $this->files = new UploadedFile($file);
+                $this->files[] = new UploadedFile($file);
             }
         }
         $this->fileManager = $fileManager;

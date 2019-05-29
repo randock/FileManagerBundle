@@ -416,6 +416,12 @@ class UploadHandler
 
             return false;
         }
+
+        if(!$this->file_mime_matches_extension_and_allowed_types($uploaded_file, $file->name)){
+            $file->error = $this->get_error_message('accept_file_types');
+            return false;
+        }
+
         if ($uploaded_file && is_uploaded_file($uploaded_file)) {
             $file_size = $this->get_file_size($uploaded_file);
         } else {
@@ -492,6 +498,57 @@ class UploadHandler
         }
 
         return true;
+    }
+
+    /**
+     * <b>NOTE</b> this function requires GD and Exif extensions. it's intended for images only
+     * Finds out the uploaded file mime type, and compares the extension related to the mime type with the allowed list
+     * of files.
+     *
+     * In case of mime type extension is not in the allowed list, <b>false</b> is returned
+     *
+     * If mime type extension is in the allowed list, the extension is compared against the current file extension.
+     *
+     * If they match, <b>true</b> is returned
+     *
+     * If they NOT match,<b>false</b> will be returned
+     *
+     * @param $file_path
+     *
+     * @return bool true if extension, mime type and allowed file type matches. false otherwise
+     */
+    protected function file_mime_matches_extension_and_allowed_types($file_path, $name)
+    {
+        $mime = @mime_content_type($file_path);
+        if (false === $mime || false === strpos($mime, 'image')) {
+            // is not image. passing
+            return true;
+        }
+
+        if (!function_exists('exif_imagetype') || !function_exists('image_type_to_extension')) {
+            // no extensions - return false
+            return false;
+        }
+
+
+        $exifType = @exif_imagetype($file_path);
+        if (false === $exifType) {
+            //exif failed - return false
+            return false;
+        }
+
+        $mimeTypeExtension = image_type_to_extension($exifType, false);
+        if (!preg_match($this->options['accept_file_types'], '.'.$mimeTypeExtension)) {
+            // mime type extension is not allowed - return false
+            return false;
+        }
+
+        $currentFileExtension = strtolower(pathinfo($name, PATHINFO_EXTENSION));
+
+        // mime extension is allowed
+        return $currentFileExtension === $mimeTypeExtension
+               || ($exifType === IMAGETYPE_JPEG && $currentFileExtension === 'jpg');
+
     }
 
     protected function upcount_name_callback($matches)

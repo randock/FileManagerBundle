@@ -519,6 +519,11 @@ class UploadHandler
      */
     protected function file_mime_matches_extension_and_allowed_types($file_path, $name)
     {
+        if (!function_exists('mime_content_type')) {
+            //cannot check mime type - just let it pass
+            return true;
+        }
+
         $mime = @mime_content_type($file_path);
         if (false === $mime || false === strpos($mime, 'image')) {
             // is not image. passing
@@ -526,8 +531,8 @@ class UploadHandler
         }
 
         if (!function_exists('exif_imagetype') || !function_exists('image_type_to_extension')) {
-            // no extensions - return false
-            return false;
+            // no extensions - return true
+            return true;
         }
 
 
@@ -538,7 +543,9 @@ class UploadHandler
         }
 
         $mimeTypeExtension = image_type_to_extension($exifType, false);
-        if (!preg_match($this->options['accept_file_types'], '.'.$mimeTypeExtension)) {
+        if (!preg_match($this->options['accept_file_types'], '.'.$mimeTypeExtension)
+            && !preg_match($this->options['accept_file_types'], $mimeTypeExtension)
+        ) {
             // mime type extension is not allowed - return false
             return false;
         }

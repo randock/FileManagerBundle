@@ -43,6 +43,8 @@ use Artgris\Bundle\FileManagerBundle\service\FileTypeService;
  */
 class ManagerController extends AbstractController
 {
+    private const ITERATION_LIMIT = 20;
+
     /**
      * @var FileManager
      */
@@ -186,7 +188,7 @@ class ManagerController extends AbstractController
             $directory = $directorytmp = $fileManager->getCurrentPath().DIRECTORY_SEPARATOR.$data['name'];
             $i = 1;
 
-            while ($fs->exists($directorytmp)) {
+            while ($fs->exists($directorytmp) && $i < self::ITERATION_LIMIT) {
                 $directorytmp = "{$directory} ({$i})";
                 ++$i;
             }
@@ -330,7 +332,7 @@ class ManagerController extends AbstractController
                 $file->error = $this->get('translator')->trans($file->error);
             }
 
-            if (!$fileManager->getImagePath()) {
+            if (isset($file->url) && !$fileManager->getImagePath()) {
                 $file->url = $this->generateUrl('file_manager_file', array_merge($fileManager->getQueryParameters(), ['fileName' => $file->url]));
             }
         }
@@ -426,12 +428,13 @@ class ManagerController extends AbstractController
             DIRECTORY_SEPARATOR,
             urldecode($lastElem)
         );
-
-        while ($filesystem->exists($destination)) {
+        $i = 0;
+        while ($filesystem->exists($destination) && $i < self::ITERATION_LIMIT) {
             $destination = sprintf(
                 '%s_copy',
                 $destination
             );
+            ++$i;
         }
 
         $this->dispatch(PreMoveFolderEvent::NAME, new PreMoveFolderEvent($fs, $origin, $destination));

@@ -41,7 +41,7 @@ class UploadedFile
         $this->name = $file->name;
         $this->size = $file->size;
         $this->type = $file->type;
-        $this->url = $file->url;
+        $this->url = $file->url ?? '';
         $this->error = $file->error ?? null;
     }
 

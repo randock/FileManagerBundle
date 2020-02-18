@@ -2,6 +2,7 @@
 
 namespace Artgris\Bundle\FileManagerBundle\Controller;
 
+use Symfony\Component\Validator\Constraints\Regex;
 use Artgris\Bundle\FileManagerBundle\Event\Delete\File\PostDeleteFileEvent;
 use Artgris\Bundle\FileManagerBundle\Event\Delete\File\PreDeleteFileEvent;
 use Artgris\Bundle\FileManagerBundle\Event\Delete\Folder\PostDeleteFolderEvent;
@@ -165,6 +166,11 @@ class ManagerController extends AbstractController
             ->add('name', TextType::class, [
                 'constraints' => [
                     new NotBlank(),
+                    new Regex(['pattern' => '/^[A-Za-z0-9][A-Za-z0-9 -_]*[A-Za-z0-9]$/'])
+                ],
+                'attr' => [
+                    'title' => $this->get('translator')->trans('randock.ypsa.medialibrary.name.pattern.restrictions'),
+                    'pattern' => '^[A-Za-z0-9][A-Za-z0-9 -_]*[A-Za-z0-9]$'
                 ],
                 'label' => false,
                 'data' => $translator->trans('input.default'),
@@ -573,6 +579,11 @@ class ManagerController extends AbstractController
             ->add('name', TextType::class, [
                 'constraints' => [
                     new NotBlank(),
+                    new Regex(['pattern' => '/^[A-Za-z0-9][A-Za-z0-9 -_]*[A-Za-z0-9]$/'])
+                ],
+                'attr' => [
+                    'title' => $this->get('translator')->trans('randock.ypsa.medialibrary.name.pattern.restrictions'),
+                    'pattern' => '^[A-Za-z0-9][A-Za-z0-9 -_]*[A-Za-z0-9]$'
                 ],
                 'label' => false,
             ])->add('extension', HiddenType::class)

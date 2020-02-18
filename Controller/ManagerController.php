@@ -166,11 +166,11 @@ class ManagerController extends AbstractController
             ->add('name', TextType::class, [
                 'constraints' => [
                     new NotBlank(),
-                    new Regex(['pattern' => '/^[A-Za-z0-9][A-Za-z0-9 -_]*[A-Za-z0-9]$/'])
+                    new Regex(['pattern' => '/^[A-Za-z0-9]([a-zA-Z0-9]+[ -_]?)*[ -_]*[A-Za-z0-9]$/'])
                 ],
                 'attr' => [
                     'title' => $this->get('translator')->trans('randock.ypsa.medialibrary.name.pattern.restrictions'),
-                    'pattern' => '^[A-Za-z0-9][A-Za-z0-9 -_]*[A-Za-z0-9]$'
+                    'pattern' => '^[A-Za-z0-9]([a-zA-Z0-9]+[ -_]?)*[ -_]*[A-Za-z0-9]$'
                 ],
                 'label' => false,
                 'data' => $translator->trans('input.default'),
@@ -579,11 +579,11 @@ class ManagerController extends AbstractController
             ->add('name', TextType::class, [
                 'constraints' => [
                     new NotBlank(),
-                    new Regex(['pattern' => '/^[A-Za-z0-9][A-Za-z0-9 -_]*[A-Za-z0-9]$/'])
+                    new Regex(['pattern' => '/^[A-Za-z0-9]([a-zA-Z0-9]+[ -_]?)*[ -_]*[A-Za-z0-9]$/'])
                 ],
                 'attr' => [
                     'title' => $this->get('translator')->trans('randock.ypsa.medialibrary.name.pattern.restrictions'),
-                    'pattern' => '^[A-Za-z0-9][A-Za-z0-9 -_]*[A-Za-z0-9]$'
+                    'pattern' => '^[A-Za-z0-9]([a-zA-Z0-9]+[ -_]?)*[ -_]*[A-Za-z0-9]$'
                 ],
                 'label' => false,
             ])->add('extension', HiddenType::class)

@@ -101,19 +101,19 @@ class ManagerController extends AbstractController
 
         if ($fileManager->getTree()) {
             $finderFiles->files()->name($regex)->filter(function (SplFileInfo $file) {
-                return $file->isReadable();
+                return $file->isReadable() && $file->getBasename() !== FileTypeService::THUMBNAIL_FOLDER_PREFIX;
             });
         } else {
             $finderFiles->filter(function (SplFileInfo $file) use ($regex) {
                 if ('file' === $file->getType()) {
                     if (preg_match($regex, $file->getFilename())) {
-                        return $file->isReadable();
+                        return $file->isReadable() && $file->getBasename() !== FileTypeService::THUMBNAIL_FOLDER_PREFIX;
                     }
 
                     return false;
                 }
 
-                return $file->isReadable();
+                return $file->isReadable() && $file->getBasename() !== FileTypeService::THUMBNAIL_FOLDER_PREFIX;
             });
         }
 
@@ -597,7 +597,7 @@ class ManagerController extends AbstractController
     {
         $directories = new Finder();
         $directories->in($path)->ignoreUnreadableDirs()->exclude(FileTypeService::THUMBNAIL_FOLDER_PREFIX)->directories()->depth(0)->sortByType()->filter(function (SplFileInfo $file) {
-            return $file->isReadable();
+            return $file->isReadable() && $file->getBasename() !== FileTypeService::THUMBNAIL_FOLDER_PREFIX;
         });
 
         if ($baseFolderName) {

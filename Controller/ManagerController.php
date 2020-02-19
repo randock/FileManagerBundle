@@ -169,7 +169,7 @@ class ManagerController extends AbstractController
                     new Regex(['pattern' => '/^[A-Za-z0-9]([a-zA-Z0-9]+[ -_]?)*[ -_]*[A-Za-z0-9]$/'])
                 ],
                 'attr' => [
-                    'title' => $this->get('translator')->trans('randock.ypsa.medialibrary.name.pattern.restrictions'),
+                    'title' => $this->get('translator')->trans('medialibrary.name.pattern.restrictions'),
                     'pattern' => '^[A-Za-z0-9]([a-zA-Z0-9]+[ -_]?)*[ -_]*[A-Za-z0-9]$'
                 ],
                 'label' => false,

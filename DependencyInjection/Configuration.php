@@ -15,13 +15,14 @@ class Configuration implements ConfigurationInterface
      */
     public function getConfigTreeBuilder()
     {
+        // symfony > 4.2
         $treeBuilder = new TreeBuilder('artgris_file_manager');
         $rootNode = $treeBuilder->getRootNode();
 
         $rootNode
             ->children()
                 ->scalarNode('web_dir')
-                    ->defaultValue('web')
+                    ->defaultValue('public')
                 ->end()
                 ->arrayNode('conf')
                     ->prototype('array')
@@ -29,6 +30,8 @@ class Configuration implements ConfigurationInterface
                             ->scalarNode('dir')->end()
                             ->enumNode('type')->values(['file', 'image', 'media'])->end()
                             ->booleanNode('tree')->end()
+                            ->scalarNode('twig_extension')->end()
+                            ->booleanNode('cachebreaker')->defaultValue(true)->end()
                             ->enumNode('view')->values(['thumbnail', 'list'])->defaultValue('list')->end()
                             ->scalarNode('regex')->end()
                             ->scalarNode('service')->end()
@@ -52,6 +55,7 @@ class Configuration implements ConfigurationInterface
                                             ->end()
                                         ->end()
                                     ->end()
+                                    ->booleanNode('override')->defaultValue(false)->end()
                                 ->end()
                             ->end()
                         ->end()

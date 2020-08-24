@@ -4,7 +4,7 @@ namespace Artgris\Bundle\FileManagerBundle\Helpers;
 
 use Artgris\Bundle\FileManagerBundle\Service\FileTypeService;
 use Symfony\Component\Finder\SplFileInfo;
-use Symfony\Component\Translation\TranslatorInterface;
+use Symfony\Contracts\Translation\TranslatorInterface;
 
 class File
 {
@@ -29,11 +29,6 @@ class File
     /**
      * File constructor.
      *
-     * @param SplFileInfo         $file
-     * @param TranslatorInterface $translator
-     * @param FileTypeService     $fileTypeService
-     * @param FileManager         $fileManager
-     *
      * @internal param $module
      */
     public function __construct(SplFileInfo $file, TranslatorInterface $translator, FileTypeService $fileTypeService, FileManager $fileManager)
@@ -48,7 +43,7 @@ class File
     public function getDimension()
     {
         return preg_match('/(gif|png|jpe?g|svg)$/i', $this->file->getExtension()) ?
-            getimagesize($this->file->getPathname()) : '';
+            @getimagesize($this->file->getPathname()) : '';
     }
 
     public function getHTMLDimension()
@@ -88,6 +83,11 @@ class File
 
             return $attr;
         }
+    }
+
+    public function isImage()
+    {
+        return \array_key_exists('image', $this->preview);
     }
 
     /**

@@ -37,9 +37,11 @@ Example with a Public folder :
 artgris_file_manager:
     conf:
         public:
-            dir: '../web/uploads' # equivalent with '%kernel.root_dir%/../web/uploads'
+            dir: '../web/uploads'
 ```    
 >Browse the `/manager/?conf=public` URL to get access to this File Manager
+
+>"../web/" or "../public/" (symfony 4) in dir path are required to get 'public' image urls otherwise filemanager thinks it's a private directory.
 
 Example with a Private folder :
     
@@ -47,7 +49,7 @@ Example with a Private folder :
 artgris_file_manager:
     conf:
         private:
-            dir: '../private' # equivalent to '%kernel.root_dir%/../private'
+            dir: '../private'
 ```
 
 >Browse the `/manager/?conf=private` URL to get access to this File Manager
@@ -135,6 +137,34 @@ artgris_file_manager:
 
 >It is recommended to combine `regex` option with `accept` option for a better user experience
 
+## `twig_extension` to apply a twig filter or a twig function to preview images
+
+| Option | Type     | Required  | Default value |
+| :---  |:--------:|:--------:|:-------------:|
+| `twig_extension`  | `string` |  False   |  |
+
+'$IMAGE$' in string will be replace by image path.
+
+```yml  
+artgris_file_manager:
+    conf:
+        public:
+            ...
+           twig_extension: "resize($IMAGE$)"  // Twig function example
+           twig_extension: "web_image($IMAGE$).zoomCrop(22, 22)"  // Twig function (Gregwar/ImageBundle) example
+
+           twig_extension: "$IMAGE$|resize"   // Twig filter example
+
+```
+
+## `cachebreaker` images 
+
+| Option | Type     | Required  | Default value |
+| :---  |:--------:|:--------:|:-------------:|
+| `cachebreaker`  | `bool` |  False   | True |
+
+Adding a cachebreaker ?time=RANDOM_NUMBER or & &time=RANDOM_NUMBER at the end of the images (preview) url. It's removed if you have used "twig_extension" option.
+
 ## `upload` A non-exhaustive  configuration of the File Upload widget [blueimp/jQuery-File-Upload](https://github.com/blueimp/jQuery-File-Upload)
 > [Exhaustive options](https://github.com/blueimp/jQuery-File-Upload/blob/master/server/php/UploadHandler.php) can only be defined with [The service configuration](2-service-configuration.md)
 
@@ -173,8 +203,6 @@ artgris_file_manager:
 #### `image_versions` image version
  
 
->By default, upload widget save the original image
-
 if you need thumbmail, or another format for the original image you have following option :
 
 
@@ -185,6 +213,7 @@ if you need thumbmail, or another format for the original image you have followi
 | `max_width`      | `Interger` |  False    |     null                       | Max width after resize/crop (px)                    |
 | `max_height`     | `Interger` |  False    |     null                       | Max height after resize/crop (px)                   |
 
+>The key determines whether you save only the version of the image or whether you save the original and the version of the image in a subfolder (subfolder name = key name)
                                                 
 Example with original image + thumbmail 80px x 80px
 
@@ -209,6 +238,7 @@ artgris_file_manager:
                 image_library: 3
                 image_versions: {'': {max_width: 100, max_height: 100}}
 ```
+> this configuration only saves the version of the image in the current folder.
 
 Complexe example with multiple image sizes:
 
@@ -253,6 +283,20 @@ artgris_file_manager:
                image_versions:
                   {'': {max_width: 800, max_height: 600}, 'thumbnail': {max_width: 80, max_height: 80}}
                   
+```
+
+#### Extra Option: Override 
+
+Overwrite an existing file with the same name (included image_versions):
+
+
+```yml 
+artgris_file_manager:
+    conf:
+        public:
+            dir: '../web/uploads'
+            upload:
+                override: true
 ```
 
 -------------------------------------------------------------------------------

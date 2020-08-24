@@ -3,29 +3,31 @@
 namespace Artgris\Bundle\FileManagerBundle\Twig;
 
 use Artgris\Bundle\FileManagerBundle\Helpers\FileManager;
-use Symfony\Component\Routing\Router;
+use Symfony\Component\Routing\RouterInterface;
+use Twig\Environment;
+use Twig\Extension\AbstractExtension;
+use Twig\TwigFunction;
 
-class OrderExtension extends \Twig_Extension
+class OrderExtension extends AbstractExtension
 {
     const ASC = 'asc';
     const DESC = 'desc';
+    const ICON = [self::ASC => 'up', self::DESC => 'down'];
 
     /**
-     * @var Router
+     * @var RouterInterface
      */
     private $router;
 
     /**
      * OrderExtension constructor.
-     *
-     * @param Router $router
      */
-    public function __construct(Router $router)
+    public function __construct(RouterInterface $router)
     {
         $this->router = $router;
     }
 
-    public function order(\Twig_Environment $environment, FileManager $fileManager, $type)
+    public function order(Environment $environment, FileManager $fileManager, $type)
     {
         $order = self::ASC === $fileManager->getQueryParameter('order');
         $active = $fileManager->getQueryParameter('orderby') === $type ? 'actived' : null;
@@ -34,14 +36,14 @@ class OrderExtension extends \Twig_Extension
         $orderBy['order'] = $active ? ($order ? self::DESC : self::ASC) : self::ASC;
         $parameters = array_merge($fileManager->getQueryParameters(), $orderBy);
 
-        $glyphicon = $active ? '-'.($order ? self::ASC : self::DESC) : '';
+        $icon = $active ? '-'.($order ? self::ICON[self::ASC] : self::ICON[self::DESC]) : '';
 
         $href = $this->router->generate('file_manager', $parameters);
 
         return $environment->render('@ArtgrisFileManager/extension/_order.html.twig', [
             'active' => $active,
             'href' => $href,
-            'glyphicon' => $glyphicon,
+            'icon' => $icon,
             'type' => $type,
             'islist' => 'list' === $fileManager->getView(),
         ]);
@@ -53,7 +55,8 @@ class OrderExtension extends \Twig_Extension
     public function getFunctions()
     {
         return [
-            'order' => new \Twig_SimpleFunction('order', [$this, 'order'], ['needs_environment' => true, 'is_safe' => ['html']]),
+            'order' => new TwigFunction('order', [$this, 'order'],
+                ['needs_environment' => true, 'is_safe' => ['html']]),
         ];
     }
 }

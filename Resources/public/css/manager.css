@@ -35,9 +35,9 @@ body {
     background-color: #beebff;
 }
 
-i.fa {
-    font-size: 1.4em;
-}
+/*i.fa,i.far,i.fas {*/
+/*font-size: 1.4em;*/
+/*}*/
 
 .alert > [data-notify="message"] {
     font-size: 80%;
@@ -85,7 +85,7 @@ i.fa {
     max-width: 100%;
 }
 
-.thumbnail-img .fa {
+.thumbnail-img .fa, .thumbnail-img .fas, .thumbnail-img .far {
     font-size: 6em;
 }
 
@@ -117,9 +117,32 @@ button i {
     padding-right: 4px;
 }
 
+.progress {
+    height: 5px;
+    margin-bottom: 0;
+    border-radius: 0;
+    background-color: transparent;
+}
+
+.notransition {
+    -webkit-transition: none !important;
+    -moz-transition: none !important;
+    -o-transition: none !important;
+    -ms-transition: none !important;
+    transition: none !important;
+}
+
+.search {
+    width: auto;
+    display: inline-block;
+    float: left;
+    height: 30px;
+    margin-right: 5px;
+}
+
 @media only screen and (max-width: 700px) {
 
-    .top-bar .btn-action > span {
+    .top-bar .btn-action > span.bar-action {
         display: none;
     }
 

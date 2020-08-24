@@ -4,8 +4,9 @@ namespace Artgris\Bundle\FileManagerBundle\Service;
 
 use Artgris\Bundle\FileManagerBundle\Helpers\FileManager;
 use SplFileInfo;
-use Symfony\Bundle\FrameworkBundle\Routing\Router;
 use Symfony\Component\Asset\Packages;
+use Symfony\Component\Routing\RouterInterface;
+use Twig\Environment;
 
 class FileTypeService
 {
@@ -17,19 +18,23 @@ class FileTypeService
     const THUMBNAIL_FOLDER_PREFIX = 'auto-thumbnails';
 
     /**
-     * @var Router
+     * @var RouterInterface
      */
     private $router;
+    /**
+     * @var Environment
+     */
+    private $twig;
 
     /**
      * FileTypeService constructor.
      *
-     * @param Router   $router
      * @param Packages $packages
      */
-    public function __construct(Router $router)
+    public function __construct(RouterInterface $router, Environment $twig)
     {
         $this->router = $router;
+        $this->twig = $twig;
     }
 
     public function preview(FileManager $fileManager, SplFileInfo $file)
@@ -43,7 +48,7 @@ class FileTypeService
         }
 
         if ($fileManager->getImagePath()) {
-            $filePath = htmlentities($fileManager->getImagePath().rawurlencode($file->getFilename()));
+            $filePath = htmlentities($fileManager->getImagePath() . rawurlencode($file->getFilename()));
         } else {
             $filePath = $this->router->generate('file_manager_file', array_merge($queryParameters, ['fileName' => rawurlencode($file->getFilename())]));
         }
@@ -52,15 +57,16 @@ class FileTypeService
         if ('file' === $type) {
             $size = $this::IMAGE_SIZE[$fileManager->getView()];
 
-            return $this->fileIcon($filePath, $extension, $size);
+            return $this->fileIcon($filePath, $extension, $size, true, $fileManager->getConfigurationParameter('twig_extension'), $fileManager->getConfigurationParameter('cachebreaker'));
         }
         if ('dir' === $type) {
-            $href = $this->router->generate('file_manager', array_merge($fileManager->getQueryParameters(), ['route' => $fileManager->getRoute().'/'.rawurlencode($file->getFilename())]));
+            $href = $this->router->generate('file_manager', array_merge($fileManager->getQueryParameters(),
+                ['route' => $fileManager->getRoute() . '/' . rawurlencode($file->getFilename())]));
 
             return [
                 'path' => $filePath,
-                'html' => "<i class='fa fa-folder-o' aria-hidden='true'></i>",
-                'folder' => '<a  href="'.$href.'">'.$file->getFilename().'</a>',
+                'html' => "<i class='fas fa-folder-open' aria-hidden='true'></i>",
+                'folder' => '<a  href="' . $href . '">' . $file->getFilename() . '</a>',
             ];
         }
     }
@@ -83,48 +89,75 @@ class FileTypeService
         return $accept;
     }
 
-    public function fileIcon($filePath, $extension = null, $size = 75)
+    public function fileIcon($filePath, $extension = null, $size = 75, $lazy = false, $twigExtension = null, $cachebreaker = null)
     {
+        $imageTemplate = null;
+
         if (null === $extension) {
             $filePathTmp = strtok($filePath, '?');
             $extension = pathinfo($filePathTmp, PATHINFO_EXTENSION);
         }
         switch (true) {
             case $this->isYoutubeVideo($filePath):
-            case preg_match('/(mp4|ogg|webm)$/i', $extension):
-                $fa = 'fa-file-video-o';
+            case preg_match('/(mp4|ogg|webm|avi|wmv|mov)$/i', $extension):
+                $fa = 'far fa-file-video';
                 break;
-            case is_array(@getimagesize($filePath)):
+            case preg_match('/(mp3|wav)$/i', $extension):
+                $fa = 'far fa-file-audio';
+                break;
             case preg_match('/(gif|png|jpe?g|svg)$/i', $extension):
+
+                $fileName = $filePath;
+                if ($cachebreaker) {
+                    $query = parse_url($filePath, PHP_URL_QUERY);
+                    $time = 'time=' . time();
+                    $fileName = $query ? $filePath . '&' . $time : $filePath . '?' . $time;
+                }
+
+                if ($twigExtension) {
+                    $imageTemplate = str_replace('$IMAGE$', 'file_path', $twigExtension);
+                }
+
+                $html = $this->twig->render('@ArtgrisFileManager/views/preview.html.twig', [
+                    'filename' => $fileName,
+                    'size' => $size,
+                    'lazy' => $lazy,
+                    'twig_extension' => $twigExtension,
+                    'image_template' => $imageTemplate,
+                    'file_path' => $filePath
+
+                ]);
+
                 return [
                     'path' => $filePath,
-                    'html' => "<img src=\"{$filePath}\" height='{$size}'>",
+                    'html' => $html,
+                    'image' => true,
                 ];
             case preg_match('/(pdf)$/i', $extension):
-                $fa = 'fa-file-pdf-o';
+                $fa = 'far fa-file-pdf';
                 break;
             case preg_match('/(docx?)$/i', $extension):
-                $fa = 'fa-file-word-o';
+                $fa = 'far fa-file-word';
                 break;
             case preg_match('/(xlsx?|csv)$/i', $extension):
-                $fa = 'fa-file-excel-o';
+                $fa = 'far fa-file-excel';
                 break;
             case preg_match('/(pptx?)$/i', $extension):
-                $fa = 'fa-file-powerpoint-o';
+                $fa = 'far fa-file-powerpoint';
                 break;
             case preg_match('/(zip|rar|gz)$/i', $extension):
-                $fa = 'fa-file-archive-o';
+                $fa = 'far fa-file-archive';
                 break;
             case filter_var($filePath, FILTER_VALIDATE_URL):
-                $fa = 'fa-internet-explorer';
+                $fa = 'fab fa-internet-explorer';
                 break;
             default:
-                $fa = 'fa-file-o';
+                $fa = 'far fa-file';
         }
 
         return [
             'path' => $filePath,
-            'html' => "<i class='fa {$fa}' aria-hidden='true'></i>",
+            'html' => "<i class='{$fa}' aria-hidden='true'></i>",
         ];
     }
 

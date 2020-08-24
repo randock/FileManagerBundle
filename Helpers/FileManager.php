@@ -2,10 +2,13 @@
 
 namespace Artgris\Bundle\FileManagerBundle\Helpers;
 
-use Symfony\Bundle\FrameworkBundle\Routing\Router;
+use Artgris\Bundle\FileManagerBundle\Event\FileManagerEvents;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
+use Symfony\Component\EventDispatcher\GenericEvent;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\HttpException;
+use Symfony\Component\Routing\RouterInterface;
 
 /**
  * @author Arthur Gribet <a.gribet@gmail.com>
@@ -20,6 +23,10 @@ class FileManager
     private $router;
     private $configuration;
     private $webDir;
+    /**
+     * @var EventDispatcherInterface
+     */
+    private $dispatcher;
 
     /**
      * FileManager constructor.
@@ -27,17 +34,17 @@ class FileManager
      * @param $queryParameters
      * @param $configuration
      * @param $kernelRoute
-     * @param Router $router
      * @param $webDir
      *
      * @internal param $basePath
      */
-    public function __construct($queryParameters, $configuration, $kernelRoute, Router $router, $webDir)
+    public function __construct($queryParameters, $configuration, $kernelRoute, RouterInterface $router, EventDispatcherInterface $dispatcher, $webDir)
     {
         $this->queryParameters = $queryParameters;
         $this->configuration = $configuration;
         $this->kernelRoute = $kernelRoute;
         $this->router = $router;
+        $this->dispatcher = $dispatcher;
         // Check Security
         $this->checkSecurity();
         $this->webDir = $webDir;
@@ -45,7 +52,7 @@ class FileManager
 
     public function getDirName()
     {
-        return dirname($this->getBasePath());
+        return \dirname($this->getBasePath());
     }
 
     public function getBaseName()
@@ -56,7 +63,7 @@ class FileManager
     public function getRegex()
     {
         if (isset($this->configuration['regex'])) {
-            return '/'.$this->configuration['regex'].'/i';
+            return '/' . $this->configuration['regex'] . '/i';
         }
 
         switch ($this->getType()) {
@@ -78,17 +85,17 @@ class FileManager
 
     public function getCurrentPath()
     {
-        return realpath($this->getBasePath().$this->getCurrentRoute());
+        return realpath($this->getBasePath() . $this->getCurrentRoute());
     }
 
     // parent url
     public function getParent()
     {
         $queryParentParameters = $this->queryParameters;
-        $parentRoute = dirname($this->getCurrentRoute());
+        $parentRoute = \dirname($this->getCurrentRoute());
 
-        if (DIRECTORY_SEPARATOR !== $parentRoute) {
-            $queryParentParameters['route'] = dirname($this->getCurrentRoute());
+        if (\DIRECTORY_SEPARATOR !== $parentRoute) {
+            $queryParentParameters['route'] = \dirname($this->getCurrentRoute());
         } else {
             unset($queryParentParameters['route']);
         }
@@ -102,7 +109,7 @@ class FileManager
     {
         $baseUrl = $this->getBaseUrl();
         if ($baseUrl) {
-            return $baseUrl.$this->getCurrentRoute().'/';
+            return $baseUrl . $this->getCurrentRoute() . '/';
         }
 
         return false;
@@ -110,7 +117,7 @@ class FileManager
 
     private function getBaseUrl()
     {
-        $webPath = '../'.$this->webDir;
+        $webPath = '../' . $this->webDir;
         $dirl = new \SplFileInfo($this->getConfiguration()['dir']);
         $base = $dirl->getPathname();
         if (0 === mb_strpos($base, $webPath)) {
@@ -118,10 +125,6 @@ class FileManager
         }
 
         return false;
-    }
-
-    private function checkDirectoryExists()
-    {
     }
 
     private function checkSecurity()
@@ -143,6 +146,9 @@ class FileManager
         if (false === $currentPath || 0 !== mb_strpos($currentPath, $this->getBasePath())) {
             throw new HttpException(Response::HTTP_UNAUTHORIZED, 'You are not allowed to access this folder.');
         }
+        $event = new GenericEvent($this, ['path' => $currentPath]);
+        $this->dispatcher->dispatch($event, FileManagerEvents::POST_CHECK_SECURITY);
+
     }
 
     public function getModule()
@@ -209,17 +215,14 @@ class FileManager
     }
 
     /**
-     * @return Router
+     * @return RouterInterface
      */
     public function getRouter()
     {
         return $this->router;
     }
 
-    /**
-     * @param Router $router
-     */
-    public function setRouter(Router $router)
+    public function setRouter(RouterInterface $router)
     {
         $this->router = $router;
     }
@@ -262,10 +265,10 @@ class FileManager
 
     private function mergeQueryAndConf($parameter, $default = null)
     {
-        if ($this->getQueryParameter($parameter) !== null) {
+        if (null !== $this->getQueryParameter($parameter)) {
             return $this->getQueryParameter($parameter);
         }
-        if ($this->getConfigurationParameter($parameter) !== null) {
+        if (null !== $this->getConfigurationParameter($parameter)) {
             return $this->getConfigurationParameter($parameter);
         }
 
@@ -274,10 +277,10 @@ class FileManager
 
     private function mergeConfAndQuery($parameter, $default = null)
     {
-        if ($this->getConfigurationParameter($parameter) !== null) {
+        if (null !== $this->getConfigurationParameter($parameter)) {
             return $this->getConfigurationParameter($parameter);
         }
-        if ($this->getQueryParameter($parameter) !== null) {
+        if (null !== $this->getQueryParameter($parameter)) {
             return $this->getQueryParameter($parameter);
         }
 

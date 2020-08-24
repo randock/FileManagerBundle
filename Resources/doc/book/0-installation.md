@@ -12,27 +12,7 @@ Installation
 $ composer require artgris/filemanager-bundle
 ```
 
-### Step 2: Enable the Bundle
-
-```php
-<?php
-// app/AppKernel.php
-
-// ...
-class AppKernel extends Kernel
-{
-    public function registerBundles()
-    {
-        $bundles = array(
-            // ...
-            new Artgris\Bundle\FileManagerBundle\ArtgrisFileManagerBundle(),
-        );
-    }
-
-    // ...
-}
-```
-### Step 3: Load the Routes
+### Step 2: Load the Routes
 
 
 ```yaml
@@ -43,14 +23,7 @@ artgris_bundle_file_manager:
     prefix:   /manager
 ```
 
-### Step 4: Prepare the Web Assets
-
-```cli
-# Symfony 3
-php bin/console assets:install --symlink
-```
-
-### Step 5:  Enable the translator service 
+### Step 3:  Enable the translator service 
 
 ```yml
 # app/config/config.yml
@@ -61,7 +34,7 @@ framework:
 Creating Your First File Manager
 ---------------------------------
 
-Create a folder **uploads** in **web**.
+Create a folder **uploads** in **public**.
  
 #### Add following minimal configuration :
 
@@ -76,7 +49,7 @@ artgris_file_manager:
 Browse the `/manager/?conf=default` URL and you'll get access to your file manager
     
     
-<img src="https://raw.githubusercontent.com/artgris/FileManagerBundle/master/Resources/doc/images/filemanager-promo.png?" alt="Symfony Filemanager created with FileManagerBundle" />
+<img src="https://raw.githubusercontent.com/artgris/FileManagerBundle/master/Resources/doc/images/filemanager-promo.png" alt="Symfony Filemanager created with FileManagerBundle" />
 
 
 -------------------------------------------------------------------------------

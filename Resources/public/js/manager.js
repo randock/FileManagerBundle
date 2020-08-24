@@ -2,6 +2,7 @@ $(function () {
 
     var $renameModal = $('#js-confirm-rename');
     var $deleteModal = $('#js-confirm-delete');
+    var $displayModal = $('#js-display-image');
     var callback = function (key, opt) {
         switch (key) {
             case 'edit':
@@ -26,6 +27,11 @@ $(function () {
                 var $downloadButton = opt.$trigger.find(".js-download")
                 downloadFile($downloadButton)
                 break;
+            case 'preview':
+                var $previewModalButton = opt.$trigger.find(".js-open-modal")
+                previewFile($previewModalButton)
+                $displayModal.modal("show");
+                break;
         }
     };
 
@@ -33,17 +39,27 @@ $(function () {
         selector: '.file',
         callback: callback,
         items: {
-            "delete": {name: deleteMessage, icon: "fa-trash"},
-            "edit": {name: renameMessage, icon: "fa-edit"},
-            "download": {name: downloadMessage, icon: "fa-download"},
+            "delete": {name: deleteMessage, icon: "far fa-trash-alt"},
+            "edit": {name: renameMessage, icon: "far fa-edit"},
+            "download": {name: downloadMessage, icon: "fas fa-download"},
+        }
+    });
+    $.contextMenu({
+        selector: '.img',
+        callback: callback,
+        items: {
+            "delete": {name: deleteMessage, icon: "far fa-trash-alt"},
+            "edit": {name: renameMessage, icon: "far fa-edit"},
+            "download": {name: downloadMessage, icon: "fas fa-download"},
+            "preview": {name: previewMessage, icon: "fas fa-eye"},
         }
     });
     $.contextMenu({
         selector: '.dir',
         callback: callback,
         items: {
-            "delete": {name: deleteMessage, icon: "fa-trash"},
-            "edit": {name: renameMessage, icon: "fa-edit"},
+            "delete": {name: deleteMessage, icon: "far fa-trash-alt"},
+            "edit": {name: renameMessage, icon: "far fa-edit"},
         }
     });
 
@@ -224,6 +240,16 @@ $(function () {
         $('#js-confirm-delete').find('form').attr('action', $deleteModalButton.data('href'));
     }
 
+    function previewFile($previewModalButton) {
+        var href = addParameterToURL($previewModalButton.data('href'), 'time=' + new Date().getTime());
+        $('#js-display-image').find('img').attr('src', href);
+    }
+
+    function addParameterToURL(_url, param) {
+        _url += (_url.split('?')[1] ? '&' : '?') + param;
+        return _url;
+    }
+
     function downloadFile($downloadButton) {
         $downloadButton[0].click();
     }
@@ -342,7 +368,7 @@ $(function () {
         setDroppables();
     }
     $(document)
-    // checkbox select all
+        // checkbox select all
         .on('click', '#select-all', function () {
             var checkboxes = $('#form-multiple-delete').find(':checkbox')
             if ($(this).is(':checked')) {
@@ -354,6 +380,11 @@ $(function () {
         // delete modal buttons
         .on('click', '.js-delete-modal', function () {
                 deleteFile($(this));
+            }
+        )
+        // preview modal buttons
+        .on('click', '.js-open-modal', function () {
+                previewFile($(this));
             }
         )
         // rename modal buttons
@@ -402,25 +433,49 @@ $(function () {
     if (moduleName === 'tiny') {
 
         $('#form-multiple-delete').on('click', '.select', function () {
-            var args = top.tinymce.activeEditor.windowManager.getParams();
-            var input = args.input;
-            var document = args.window.document;
-            var divInputSplit = document.getElementById(input).parentNode.id.split("_");
 
-            // set url
-            document.getElementById(input).value = $(this).attr("data-path");
 
-            // set width and height
-            var baseId = divInputSplit[0] + '_';
-            var baseInt = parseInt(divInputSplit[1], 10);
+            var windowManager = top != undefined && top.tinymceWindowManager != undefined ? top.tinymceWindowManager : '';
 
-            divWidth = baseId + (baseInt + 3);
-            divHeight = baseId + (baseInt + 5);
+            // tinymce 5
+            if (windowManager != '') {
+                if (top.tinymceCallBackURL != undefined)
+                    top.tinymceCallBackURL = $(this).attr("data-path");
+                windowManager.close();
+            } else {
+                // tinymce 4
+                var args = top.tinymce.activeEditor.windowManager.getParams();
+                var input = args.input;
+                var document = args.window.document;
+                var divInputSplit = document.getElementById(input).parentNode.id.split("_");
 
-            document.getElementById(divWidth).value = $(this).attr("data-width");
-            document.getElementById(divHeight).value = $(this).attr("data-height");
+                // set url
+                document.getElementById(input).value = $(this).attr("data-path");
 
-            top.tinymce.activeEditor.windowManager.close();
+                // set width and height
+                var baseId = divInputSplit[0] + '_';
+                var baseInt = parseInt(divInputSplit[1], 10);
+
+                divWidth = baseId + (baseInt + 3);
+                divHeight = baseId + (baseInt + 5);
+
+                document.getElementById(divWidth).value = $(this).attr("data-width");
+                document.getElementById(divHeight).value = $(this).attr("data-height");
+
+                top.tinymce.activeEditor.windowManager.close();
+            }
+
+        });
+    }
+
+    // Module CKEditor
+    if (moduleName === 'ckeditor') {
+        $('#form-multiple-delete').on('click', '.select', function () {
+            var regex = new RegExp("[\\?&]CKEditorFuncNum=([^&#]*)");
+            var funcNum = regex.exec(location.search)[1];
+            var fileUrl = $(this).attr("data-path");
+            window.opener.CKEDITOR.tools.callFunction(funcNum, fileUrl);
+            window.close();
         });
     }
 
@@ -460,6 +515,9 @@ $(function () {
                 }).done(function (data) {
                     // update file list
                     $('#form-multiple-delete').html(data.data);
+
+                    lazy();
+
                     if (tree === true) {
                         $('#tree').data('jstree', false).empty();
                         initTree(data.treeData);
@@ -504,6 +562,40 @@ $(function () {
                 '<a href="{3}" target="{4}" data-notify="url"></a>' +
                 '</div>'
         });
+    }).on('fileuploadprogressall', function (e, data) {
+
+        if (e.isDefaultPrevented()) {
+            return false;
+        }
+        var progress = Math.floor((data.loaded / data.total) * 100);
+
+        $('.progress-bar')
+            .removeClass("notransition")
+            .attr('aria-valuenow', progress)
+            .css('width', progress + '%');
+
+    }).on('fileuploadstop', function (e) {
+        if (e.isDefaultPrevented()) {
+            return false;
+        }
+        $('.progress-bar')
+            .addClass("notransition")
+            .attr('aria-valuenow', 0)
+            .css('width', 0 + '%');
+    });
+
+    function lazy() {
+        $('.lazy').Lazy({});
+    }
+
+    lazy();
+
+    $('#search').on("keyup", function() {
+        var value = $(this).val().toLowerCase();
+        $('#form-multiple-delete .file-wrapper').filter(function() {
+            $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1);
+        });
+
     });
 })
 ;

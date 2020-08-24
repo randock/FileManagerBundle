@@ -6,9 +6,8 @@ use Artgris\Bundle\FileManagerBundle\Tests\Fixtures\AbstractTestCase;
 
 class ManagerControllerTest extends AbstractTestCase
 {
-    public function setUp()
+    public function setUp(): void
     {
-        parent::setUp();
         $this->initClient(['environment' => 'default']);
     }
 
@@ -28,7 +27,7 @@ class ManagerControllerTest extends AbstractTestCase
 
         $cssList = [
             '/bundles/artgrisfilemanager/libs/bootstrap/dist/css/bootstrap.min.css',
-            '/bundles/artgrisfilemanager/libs/components-font-awesome/css/font-awesome.min.css',
+            'https://use.fontawesome.com/releases/v5.7.2/css/all.css',
             '/bundles/artgrisfilemanager/libs/jstree/dist/themes/default/style.min.css',
             '/bundles/artgrisfilemanager/libs/blueimp-file-upload/css/jquery.fileupload.css',
             '/bundles/artgrisfilemanager/css/manager.css',
@@ -54,6 +53,7 @@ class ManagerControllerTest extends AbstractTestCase
             '/bundles/artgrisfilemanager/libs/blueimp-file-upload/js/vendor/jquery.ui.widget.js',
             '/bundles/artgrisfilemanager/libs/blueimp-file-upload/js/jquery.iframe-transport.js',
             '/bundles/artgrisfilemanager/libs/blueimp-file-upload/js/jquery.fileupload.js',
+            '/bundles/artgrisfilemanager/libs/blueimp-file-upload/js/jquery.fileupload-process.js',
             '/bundles/artgrisfilemanager/libs/sticky-kit/jquery.sticky-kit.min.js',
             '/bundles/artgrisfilemanager/libs/remarkable-bootstrap-notify/dist/bootstrap-notify.min.js',
             '/bundles/artgrisfilemanager/libs/jQuery-contextMenu/dist/jquery.contextMenu.min.js',
@@ -65,12 +65,6 @@ class ManagerControllerTest extends AbstractTestCase
                 $crawler->filter('script')->eq($i)->attr('src')
             );
         }
-    }
-
-    public function testListViewAction()
-    {
-        $crawler = $this->getManagerPage();
-        $this->assertSame('Add files...', trim($crawler->filter('.fileinput-button span')->text()));
     }
 
     public function testNoParent()
@@ -90,6 +84,7 @@ class ManagerControllerTest extends AbstractTestCase
         $crawler = $this->getManagerPage();
         $urls = [
             '/manager/?conf=default&tree=0',
+            null,
             '/manager/?conf=default&view=list',
             '/manager/?conf=default&view=thumbnail',
         ];
@@ -103,7 +98,7 @@ class ManagerControllerTest extends AbstractTestCase
         $crawler = $this->getManagerPage();
 
         $files = [
-            'file',
+            'file-wrapper file',
         ];
 
         foreach ($files as $i => $file) {

@@ -39,6 +39,8 @@ title:
     file: Renomear
   delete: Excluir
   download: Download
+  preview:
+    file: Abrir
 input:
     default: Nova pasta
 table:
@@ -55,3 +57,5 @@ size:
 select-all: Selecionar tudo
 upload:
   exception_move_uploaded_file: Permissão negada
+search:
+  placeholder: Pesquisa

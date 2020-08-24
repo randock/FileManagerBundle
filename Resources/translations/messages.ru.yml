@@ -39,6 +39,8 @@ title:
     file: Переименовать
   delete: Удалить
   download: Скачать
+  preview:
+    file: открыть
 input:
     default: Новая папка
 table:
@@ -55,3 +57,5 @@ size:
 select-all: Выбрать все
 upload:
   exception_move_uploaded_file: Доступ запрещен
+search:
+  placeholder: Поиск

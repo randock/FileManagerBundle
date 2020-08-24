@@ -3,6 +3,7 @@
 namespace Artgris\Bundle\FileManagerBundle\Controller;
 
 use Symfony\Component\Validator\Constraints\Regex;
+use Artgris\Bundle\FileManagerBundle\Event\FileManagerEvents;
 use Artgris\Bundle\FileManagerBundle\Event\Delete\File\PostDeleteFileEvent;
 use Artgris\Bundle\FileManagerBundle\Event\Delete\File\PreDeleteFileEvent;
 use Artgris\Bundle\FileManagerBundle\Event\Delete\Folder\PostDeleteFolderEvent;
@@ -147,7 +148,7 @@ class ManagerController extends AbstractController
             });
         }
 
-        $this->dispatch(FileManagerEvents::POST_FILE_FILTER_CONFIGURATION, ['finder' => $finderFiles]);
+        $this->dispatchGeneric(FileManagerEvents::POST_FILE_FILTER_CONFIGURATION, ['finder' => $finderFiles]);
 
         $formDelete = $this->createDeleteForm()->createView();
         $fileArray = [];
@@ -495,7 +496,7 @@ class ManagerController extends AbstractController
         $fileManager = $this->newFileManager($request->query->all());
 
         $file = $fileManager->getCurrentPath() . \DIRECTORY_SEPARATOR . urldecode($fileName);
-        $this->dispatch(FileManagerEvents::FILE_ACCESS, ['path' => $file]);
+        $this->dispatchGeneric(FileManagerEvents::FILE_ACCESS, ['path' => $file]);
 
         return new BinaryFileResponse($file);
     }
@@ -637,7 +638,7 @@ class ManagerController extends AbstractController
             return $file->isReadable() && $file->getBasename() !== FileTypeService::THUMBNAIL_FOLDER_PREFIX;
         });
 
-        $this->dispatch(FileManagerEvents::POST_DIRECTORY_FILTER_CONFIGURATION, ['finder' => $directories]);
+        $this->dispatchGeneric(FileManagerEvents::POST_DIRECTORY_FILTER_CONFIGURATION, ['finder' => $directories]);
 
         if ($baseFolderName) {
             $directories->name($baseFolderName);
@@ -695,7 +696,7 @@ class ManagerController extends AbstractController
     {
         $files = new Finder();
         $files->in($path)->files()->depth(0)->name($regex);
-        $this->dispatch(FileManagerEvents::POST_FILE_FILTER_CONFIGURATION, ['finder' => $files]);
+        $this->dispatchGeneric(FileManagerEvents::POST_FILE_FILTER_CONFIGURATION, ['finder' => $files]);
         return iterator_count($files);
     }
 

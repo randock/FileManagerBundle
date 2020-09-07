@@ -36,7 +36,7 @@ $(function () {
     };
 
     $.contextMenu({
-        selector: '.file',
+        selector: '.file-wrapper',
         callback: callback,
         items: {
             "delete": {name: deleteMessage, icon: "far fa-trash-alt"},
@@ -163,7 +163,7 @@ $(function () {
                     }else{
                         moveFolder(file.find('p > a'), $(ui.draggable).find('p > a'))
                     }
-                }else if($(ui.draggable).hasClass('file')) {
+                }else if($(ui.draggable).hasClass('file-wrapper')) {
                     if($(ui.draggable).is('tr')) {
                         moveFile(file.find('td > a'), $(ui.draggable))
                     }else {
@@ -226,7 +226,7 @@ $(function () {
                 return getHelper($(this));
             }
         }
-        $('.file').draggable(draggableOpts);
+        $('.file-wrapper').draggable(draggableOpts);
         $('.dir').draggable(draggableOpts);
     }
 
@@ -290,7 +290,7 @@ $(function () {
             return false;
         }).on('dnd_move.vakata', function(e, data) {
             let file = $(data.element);
-            if(file.hasClass('file')) {
+            if(file.hasClass('file-wrapper')) {
                 vakataDndMoveFile(e, data);
             } else {
                 vakataDndMoveFolder(e, data);
@@ -321,7 +321,7 @@ $(function () {
         let file = $(data.element);
 
         let conditions = target.closest('.jstree-hovered:not(.jstree-clicked)').length
-            && file.hasClass('file');
+            && file.hasClass('file-wrapper');
 
         return conditions;
     }
@@ -330,7 +330,7 @@ $(function () {
         let target = $(data.event.target);
         let file = $(data.element);
 
-        if(target.closest('.jstree-hovered:not(.jstree-clicked)').length && file.hasClass('file')) {
+        if(target.closest('.jstree-hovered:not(.jstree-clicked)').length && file.hasClass('file-wrapper')) {
             data.helper.find('.jstree-icon').removeClass('jstree-er').addClass('jstree-ok');
         } else {
             data.helper.find('.jstree-icon').removeClass('jstree-ok').addClass('jstree-er');

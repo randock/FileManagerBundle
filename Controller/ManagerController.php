@@ -286,7 +286,7 @@ class ManagerController extends AbstractController
                         $fileName)
                 );
                 if (0 !== mb_strpos($newFilePath, $fileManager->getCurrentPath())) {
-                    $this->addFlash('danger', $translator->trans('file.renamed.unauthorized'));
+                    $this->addFlash('danger', $this->translator->trans('file.renamed.unauthorized'));
                 } else {
                     $fs = new Filesystem();
                     $this->dispatch(
